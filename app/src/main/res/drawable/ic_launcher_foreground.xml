@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+  android:width="108dp"
+  android:height="108dp"
+  android:viewportWidth="108"
+  android:viewportHeight="108">
+  <!-- 外周のコンパスリング -->
+  <path
+    android:fillColor="#00000000"
+    android:pathData="M54,54m-28,0a28,28 0,1 1,56 0a28,28 0,1 1,-56 0"
+    android:strokeWidth="3"
+    android:strokeColor="#38BDF8" />
+  <!-- 北を指す赤い針 -->
+  <path
+    android:fillColor="#EF4444"
+    android:pathData="M54,28 L60,54 L54,50 L48,54 Z" />
+  <!-- 南を指す白い針 -->
+  <path
+    android:fillColor="#E2E8F0"
+    android:pathData="M54,80 L60,54 L54,58 L48,54 Z" />
+</vector>
