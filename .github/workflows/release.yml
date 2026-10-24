@@ -1,0 +1,63 @@
+name: Build & Release APK
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    name: Build & Publish Release
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+          cache: 'gradle'
+
+      - name: Grant execute permission for gradlew
+        run: chmod +x gradlew
+
+      - name: Build Release APK
+        run: ./gradlew assembleRelease
+
+      - name: Rename APK for Release
+        run: |
+          cp app/build/outputs/apk/release/app-release.apk clinometer-app-${{ github.ref_name }}.apk
+
+      - name: Create GitHub Release & Upload APK
+        uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            clinometer-app-${{ github.ref_name }}.apk
+            app/build/outputs/apk/release/app-release.apk
+          name: Release ${{ github.ref_name }}
+          draft: false
+          prerelease: false
+          generate_release_notes: true
+          body: |
+            ### 地学クリノメーター ${{ github.ref_name }}
+            
+            Android端末向けの地学クリノメーター公式リリースです。
+            
+            #### インストール方法
+            1. 下記の Assets から `app-release.apk` をAndroid端末にダウンロードしてください。
+            2. ダウンロード完了後、APKファイルを開いてインストールしてください（「不明なアプリのインストール」の許可が必要です）。
+            
+            #### 主な機能
+            - 面測定（背面密着）& 側面測定
+            - クリノコンパス盤（E/W逆転目盛り）
+            - 日本式 / 右手則(RHR) / Dip-DipDir 表記切替
+            - 音量キー連動HOLD & バイブレーション
+            - デジタル野帳（メモ保存・CSVコピー）
+            - 使い方ガイド（立体図解入りヘルプシート）
