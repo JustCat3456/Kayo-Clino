@@ -45,6 +45,8 @@ import androidx.compose.material.icons.filled.Code
 import androidx.compose.material.icons.filled.ContentCopy
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Description
+import androidx.compose.material.icons.filled.ExpandLess
+import androidx.compose.material.icons.filled.ExpandMore
 import androidx.compose.material.icons.filled.Explore
 import androidx.compose.material.icons.filled.GpsFixed
 import androidx.compose.material.icons.filled.History
@@ -116,6 +118,7 @@ import com.example.clinometer.model.AppLanguage
 import com.example.clinometer.model.MeasureMode
 import com.example.clinometer.model.MeasurementRecord
 import com.example.clinometer.model.NotationFormat
+import com.example.clinometer.model.ThemeMode
 import com.example.clinometer.ui.components.ClinometerDial
 import com.example.clinometer.ui.components.ClinometerHelpSheet
 import com.example.clinometer.ui.components.OnboardingCarouselDialog
@@ -132,6 +135,7 @@ fun ClinometerScreen(
   uiState: ClinometerUiState,
   onToggleHold: () -> Unit,
   onSelectLanguage: (AppLanguage) -> Unit,
+  onSelectThemeMode: (ThemeMode) -> Unit,
   onSelectMeasureMode: (MeasureMode) -> Unit,
   onSelectNotationFormat: (NotationFormat) -> Unit,
   onToggleReverseEastWest: () -> Unit,
@@ -191,30 +195,40 @@ fun ClinometerScreen(
     topBar = {
       TopAppBar(
         title = {
-          Column {
-            Text(
-              text = strings.appTitle,
-              style = MaterialTheme.typography.titleMedium,
-              fontWeight = FontWeight.Bold
+          Row(
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(10.dp)
+          ) {
+            Image(
+              painter = painterResource(id = R.drawable.ic_kayo_icon),
+              contentDescription = null,
+              modifier = Modifier.size(32.dp)
             )
-            Text(
-              text = buildString {
-                append(
-                  if (uiState.reverseEastWest) {
-                    strings.clinoCompassPlate
-                  } else {
-                    strings.standardCompassPlate
-                  }
-                )
-                append(" ・ ${strings.declinationPrefix} ${"%.1f".format(uiState.declinationDeg)}°")
-                if (uiState.isLevelCalibrated) append(" ・ [${strings.levelCalibratedBadge}]")
-                if (uiState.isSimulationMode) append(" ・ [SIM]")
-              },
-              style = MaterialTheme.typography.labelSmall,
-              color = MaterialTheme.colorScheme.onSurfaceVariant,
-              maxLines = 1,
-              overflow = TextOverflow.Ellipsis
-            )
+            Column {
+              Text(
+                text = strings.appTitle,
+                style = MaterialTheme.typography.titleMedium,
+                fontWeight = FontWeight.Bold
+              )
+              Text(
+                text = buildString {
+                  append(
+                    if (uiState.reverseEastWest) {
+                      strings.clinoCompassPlate
+                    } else {
+                      strings.standardCompassPlate
+                    }
+                  )
+                  append(" ・ ${strings.declinationPrefix} ${"%.1f".format(uiState.declinationDeg)}°")
+                  if (uiState.isLevelCalibrated) append(" ・ [${strings.levelCalibratedBadge}]")
+                  if (uiState.isSimulationMode) append(" ・ [SIM]")
+                },
+                style = MaterialTheme.typography.labelSmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis
+              )
+            }
           }
         },
         actions = {
@@ -553,6 +567,7 @@ fun ClinometerScreen(
     ClinometerSettingsDialog(
       strings = strings,
       language = uiState.language,
+      themeMode = uiState.themeMode,
       declinationDeg = uiState.declinationDeg,
       pitchOffsetDeg = uiState.pitchOffsetDeg,
       rollOffsetDeg = uiState.rollOffsetDeg,
@@ -561,6 +576,7 @@ fun ClinometerScreen(
       isSimulationMode = uiState.isSimulationMode,
       isGpsLoading = uiState.isGpsLoading,
       onSelectLanguage = onSelectLanguage,
+      onSelectThemeMode = onSelectThemeMode,
       onUpdateDeclination = onUpdateDeclination,
       onRequestGpsDeclination = triggerGpsDeclination,
       onCalibrateFlatSurface = {
@@ -769,11 +785,12 @@ private fun SaveMeasurementDialog(
   )
 }
 
-@OptIn(ExperimentalLayoutApi::class)
+@OptIn(ExperimentalLayoutApi::class, ExperimentalMaterial3Api::class)
 @Composable
 private fun ClinometerSettingsDialog(
   strings: AppStrings,
   language: AppLanguage,
+  themeMode: ThemeMode,
   declinationDeg: Float,
   pitchOffsetDeg: Float,
   rollOffsetDeg: Float,
@@ -782,6 +799,7 @@ private fun ClinometerSettingsDialog(
   isSimulationMode: Boolean,
   isGpsLoading: Boolean,
   onSelectLanguage: (AppLanguage) -> Unit,
+  onSelectThemeMode: (ThemeMode) -> Unit,
   onUpdateDeclination: (Float) -> Unit,
   onRequestGpsDeclination: () -> Unit,
   onCalibrateFlatSurface: () -> Unit,
@@ -793,13 +811,15 @@ private fun ClinometerSettingsDialog(
   onOpenOnboarding: () -> Unit,
   onDismiss: () -> Unit
 ) {
+  var showDebugSubMenu by remember { mutableStateOf(false) }
+
   AlertDialog(
     onDismissRequest = onDismiss,
     title = { Text(strings.settingsTitle) },
     text = {
       Column(
         modifier = Modifier.verticalScroll(rememberScrollState()),
-        verticalArrangement = Arrangement.spacedBy(12.dp)
+        verticalArrangement = Arrangement.spacedBy(10.dp)
       ) {
         // 1. 言語設定 (6言語対応・折り返し表示)
         Text(
@@ -808,8 +828,8 @@ private fun ClinometerSettingsDialog(
           fontWeight = FontWeight.Bold
         )
         FlowRow(
-          horizontalArrangement = Arrangement.spacedBy(8.dp),
-          verticalArrangement = Arrangement.spacedBy(4.dp),
+          horizontalArrangement = Arrangement.spacedBy(6.dp),
+          verticalArrangement = Arrangement.spacedBy(2.dp),
           modifier = Modifier.fillMaxWidth()
         ) {
           AppLanguage.entries.forEach { lang ->
@@ -820,23 +840,52 @@ private fun ClinometerSettingsDialog(
                 selectedContainerColor = MaterialTheme.colorScheme.secondaryContainer,
                 selectedLabelColor = MaterialTheme.colorScheme.onSecondaryContainer
               ),
-              label = { Text(lang.nativeName) }
+              label = { Text(lang.nativeName, style = MaterialTheme.typography.labelSmall) }
             )
+          }
+        }
+
+        // 2. カラーモード切替 (ライト / ダーク / 自動)
+        Text(
+          text = strings.themeSectionTitle,
+          style = MaterialTheme.typography.titleSmall,
+          fontWeight = FontWeight.Bold
+        )
+        SingleChoiceSegmentedButtonRow(modifier = Modifier.fillMaxWidth()) {
+          ThemeMode.entries.forEachIndexed { index, mode ->
+            SegmentedButton(
+              selected = themeMode == mode,
+              onClick = { onSelectThemeMode(mode) },
+              icon = {},
+              colors = SegmentedButtonDefaults.colors(
+                activeContainerColor = MaterialTheme.colorScheme.secondaryContainer,
+                activeContentColor = MaterialTheme.colorScheme.onSecondaryContainer,
+                inactiveContainerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f),
+                inactiveContentColor = MaterialTheme.colorScheme.onSurfaceVariant
+              ),
+              shape = SegmentedButtonDefaults.itemShape(
+                index = index,
+                count = ThemeMode.entries.size
+              )
+            ) {
+              Text(
+                text = strings.themeLabel(mode),
+                style = MaterialTheme.typography.labelMedium,
+                fontWeight = if (themeMode == mode) FontWeight.Bold else FontWeight.Medium,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis
+              )
+            }
           }
         }
 
         HorizontalDivider()
 
-        // 2. 磁気偏角設定 + GPS自動計算
+        // 3. 磁気偏角設定 + GPS自動計算
         Text(
           text = strings.declinationSectionTitle(declinationDeg),
           style = MaterialTheme.typography.titleSmall,
           fontWeight = FontWeight.Bold
-        )
-        Text(
-          text = strings.declinationHint,
-          style = MaterialTheme.typography.bodySmall,
-          color = MaterialTheme.colorScheme.onSurfaceVariant
         )
         FilledTonalButton(
           onClick = onRequestGpsDeclination,
@@ -854,9 +903,10 @@ private fun ClinometerSettingsDialog(
             style = MaterialTheme.typography.labelMedium
           )
         }
-        Row(
+        FlowRow(
           modifier = Modifier.fillMaxWidth(),
-          horizontalArrangement = Arrangement.spacedBy(6.dp)
+          horizontalArrangement = Arrangement.spacedBy(6.dp),
+          verticalArrangement = Arrangement.spacedBy(2.dp)
         ) {
           val presets = listOf(
             "Okinawa -5.5°" to -5.5f,
@@ -879,7 +929,7 @@ private fun ClinometerSettingsDialog(
 
         HorizontalDivider()
 
-        // 3. カメラ出っ張り・水平ゼロ点補正
+        // 4. カメラ出っ張り・水平ゼロ点補正
         Text(
           text = strings.levelCalibrationTitle,
           style = MaterialTheme.typography.titleSmall,
@@ -913,7 +963,7 @@ private fun ClinometerSettingsDialog(
 
         HorizontalDivider()
 
-        // 4. 日本式 E/W 逆転盤面
+        // 5. 日本式 E/W 逆転盤面
         Row(
           modifier = Modifier.fillMaxWidth(),
           horizontalArrangement = Arrangement.SpaceBetween,
@@ -937,9 +987,7 @@ private fun ClinometerSettingsDialog(
           )
         }
 
-        HorizontalDivider()
-
-        // 5. HOLD時の音声読み上げ (TTS)
+        // 6. HOLD時の音声読み上げ (TTS)
         Row(
           modifier = Modifier.fillMaxWidth(),
           horizontalArrangement = Arrangement.SpaceBetween,
@@ -965,33 +1013,7 @@ private fun ClinometerSettingsDialog(
 
         HorizontalDivider()
 
-        // 6. シミュレーションモード
-        Row(
-          modifier = Modifier.fillMaxWidth(),
-          horizontalArrangement = Arrangement.SpaceBetween,
-          verticalAlignment = Alignment.CenterVertically
-        ) {
-          Column(modifier = Modifier.weight(1f)) {
-            Text(
-              text = strings.simModeTitle,
-              style = MaterialTheme.typography.bodyMedium,
-              fontWeight = FontWeight.SemiBold
-            )
-            Text(
-              text = strings.simModeDesc,
-              style = MaterialTheme.typography.bodySmall,
-              color = MaterialTheme.colorScheme.onSurfaceVariant
-            )
-          }
-          Switch(
-            checked = isSimulationMode,
-            onCheckedChange = onToggleSimulationMode
-          )
-        }
-
-        HorizontalDivider()
-
-        // 7. 使い方ガイド ＆ 初期設定カルーセル表示 (デバッグ用)
+        // 7. 使い方ガイド ＆ デバッグ階層メニュー (設定画面を圧縮)
         FilledTonalButton(
           onClick = onOpenHelp,
           colors = ButtonDefaults.filledTonalButtonColors(
@@ -1009,8 +1031,9 @@ private fun ClinometerSettingsDialog(
           Text(strings.openHelpBtn)
         }
 
+        // デバッグボタン（押すと下の階層にシミュレーションモードと初期設定カルーセルを展開）
         OutlinedButton(
-          onClick = onOpenOnboarding,
+          onClick = { showDebugSubMenu = !showDebugSubMenu },
           modifier = Modifier.fillMaxWidth()
         ) {
           Icon(
@@ -1019,7 +1042,65 @@ private fun ClinometerSettingsDialog(
             modifier = Modifier.size(18.dp)
           )
           Spacer(modifier = Modifier.width(8.dp))
-          Text(strings.openOnboardingDebugBtn)
+          Text(
+            text = strings.debugMenuBtn,
+            modifier = Modifier.weight(1f)
+          )
+          Icon(
+            imageVector = if (showDebugSubMenu) Icons.Default.ExpandLess else Icons.Default.ExpandMore,
+            contentDescription = null,
+            modifier = Modifier.size(18.dp)
+          )
+        }
+
+        AnimatedVisibility(visible = showDebugSubMenu) {
+          Surface(
+            shape = RoundedCornerShape(14.dp),
+            color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.45f),
+            border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant),
+            modifier = Modifier.fillMaxWidth()
+          ) {
+            Column(
+              modifier = Modifier.padding(12.dp),
+              verticalArrangement = Arrangement.spacedBy(10.dp)
+            ) {
+              Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+              ) {
+                Column(modifier = Modifier.weight(1f)) {
+                  Text(
+                    text = strings.simModeTitle,
+                    style = MaterialTheme.typography.bodyMedium,
+                    fontWeight = FontWeight.SemiBold
+                  )
+                  Text(
+                    text = strings.simModeDesc,
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                  )
+                }
+                Switch(
+                  checked = isSimulationMode,
+                  onCheckedChange = onToggleSimulationMode
+                )
+              }
+
+              OutlinedButton(
+                onClick = onOpenOnboarding,
+                modifier = Modifier.fillMaxWidth()
+              ) {
+                Icon(
+                  imageVector = Icons.Default.Science,
+                  contentDescription = null,
+                  modifier = Modifier.size(16.dp)
+                )
+                Spacer(modifier = Modifier.width(8.dp))
+                Text(strings.openOnboardingDebugBtn, style = MaterialTheme.typography.labelMedium)
+              }
+            }
+          }
         }
 
         HorizontalDivider()
@@ -1051,7 +1132,7 @@ private fun AboutAndLinksSection(
     fontWeight = FontWeight.Bold
   )
 
-  // Made in Okinawa & Author クレジットカード
+  // Made in Okinawa & Project Repository クレジットカード (タップでプロジェクトのリポジトリへ遷移)
   Card(
     shape = RoundedCornerShape(14.dp),
     colors = CardDefaults.cardColors(
@@ -1062,56 +1143,71 @@ private fun AboutAndLinksSection(
       .fillMaxWidth()
       .clickable {
         context.startActivity(
-          Intent(Intent.ACTION_VIEW, Uri.parse("https://github.com/JustCat3456"))
+          Intent(Intent.ACTION_VIEW, Uri.parse("https://github.com/JustCat3456/Kayo-Clino"))
         )
       }
   ) {
     Column(
       modifier = Modifier
         .fillMaxWidth()
-        .padding(horizontal = 14.dp, vertical = 10.dp)
+        .padding(horizontal = 14.dp, vertical = 10.dp),
+      verticalArrangement = Arrangement.spacedBy(6.dp)
     ) {
       Row(
         modifier = Modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.SpaceBetween,
-        verticalAlignment = Alignment.CenterVertically
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(10.dp)
       ) {
-        Text(
-          text = "Kayo-Clino  v1.1.0",
-          style = MaterialTheme.typography.titleSmall,
-          fontFamily = FontFamily.Monospace,
-          fontWeight = FontWeight.ExtraBold,
-          color = MaterialTheme.colorScheme.primary
+        Image(
+          painter = painterResource(id = R.drawable.ic_kayo_icon),
+          contentDescription = "Kayo-Clino Icon",
+          modifier = Modifier.size(40.dp)
         )
-        Surface(
-          shape = RoundedCornerShape(12.dp),
-          color = MaterialTheme.colorScheme.secondaryContainer
-        ) {
+        Column(modifier = Modifier.weight(1f)) {
           Text(
-            text = strings.madeInOkinawaBadge,
-            style = MaterialTheme.typography.labelSmall,
-            fontWeight = FontWeight.Bold,
-            color = MaterialTheme.colorScheme.onSecondaryContainer,
-            modifier = Modifier.padding(horizontal = 8.dp, vertical = 3.dp)
+            text = "Kayo-Clino  v1.2.0",
+            style = MaterialTheme.typography.titleSmall,
+            fontFamily = FontFamily.Monospace,
+            fontWeight = FontWeight.ExtraBold,
+            color = MaterialTheme.colorScheme.primary
           )
+          Text(
+            text = strings.authorLabel,
+            style = MaterialTheme.typography.labelSmall,
+            fontWeight = FontWeight.SemiBold,
+            color = MaterialTheme.colorScheme.onSurfaceVariant
+          )
+          Row(verticalAlignment = Alignment.CenterVertically) {
+            Text(
+              text = "github.com/JustCat3456/Kayo-Clino",
+              style = MaterialTheme.typography.labelSmall,
+              fontFamily = FontFamily.Monospace,
+              color = MaterialTheme.colorScheme.onSurfaceVariant,
+              maxLines = 1,
+              overflow = TextOverflow.Ellipsis
+            )
+            Spacer(modifier = Modifier.width(4.dp))
+            Icon(
+              imageVector = Icons.AutoMirrored.Filled.OpenInNew,
+              contentDescription = null,
+              tint = MaterialTheme.colorScheme.onSurfaceVariant,
+              modifier = Modifier.size(12.dp)
+            )
+          }
         }
       }
-      Spacer(modifier = Modifier.height(4.dp))
-      Row(
-        verticalAlignment = Alignment.CenterVertically
+
+      Surface(
+        shape = RoundedCornerShape(12.dp),
+        color = MaterialTheme.colorScheme.secondaryContainer
       ) {
         Text(
-          text = strings.authorLabel,
-          style = MaterialTheme.typography.bodySmall,
-          fontWeight = FontWeight.SemiBold,
-          color = MaterialTheme.colorScheme.onSurfaceVariant
-        )
-        Spacer(modifier = Modifier.width(4.dp))
-        Icon(
-          imageVector = Icons.AutoMirrored.Filled.OpenInNew,
-          contentDescription = null,
-          tint = MaterialTheme.colorScheme.onSurfaceVariant,
-          modifier = Modifier.size(13.dp)
+          text = strings.madeInOkinawaBadge,
+          style = MaterialTheme.typography.labelSmall,
+          fontWeight = FontWeight.Bold,
+          color = MaterialTheme.colorScheme.onSecondaryContainer,
+          maxLines = 1,
+          modifier = Modifier.padding(horizontal = 10.dp, vertical = 4.dp)
         )
       }
     }

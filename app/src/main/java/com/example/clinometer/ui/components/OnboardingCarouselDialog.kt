@@ -1,6 +1,8 @@
 package com.example.clinometer.ui.components
 
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Canvas
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -9,6 +11,7 @@ import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -16,8 +19,10 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.VolumeUp
 import androidx.compose.material.icons.filled.Explore
@@ -48,18 +53,22 @@ import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.drawscope.rotate
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
+import com.example.clinometer.R
 import com.example.clinometer.model.AppLanguage
 import com.example.clinometer.ui.i18n.AppStrings
 import com.example.clinometer.ui.theme.CompassNorthRed
 import kotlinx.coroutines.launch
 
 /**
- * 初回起動時およびヘルプボタン押下時に表示する4ステップのオンボーディング・カルーセル
+ * 初回起動時およびデバッグメニューから表示する4ステップのオンボーディング・カルーセル
+ * 全スライドで背面の Card サイズを固定統一し、文字量を抑えてシンプルに表示する。
  */
 @Composable
 fun OnboardingCarouselDialog(
@@ -96,7 +105,7 @@ fun OnboardingCarouselDialog(
       Column(
         modifier = Modifier
           .fillMaxWidth()
-          .padding(20.dp),
+          .padding(horizontal = 20.dp, vertical = 16.dp),
         horizontalAlignment = Alignment.CenterHorizontally
       ) {
         // 上部スキップバー
@@ -116,23 +125,28 @@ fun OnboardingCarouselDialog(
           }
         }
 
-        // カルーセル本体
+        // カルーセル本体（全ページで高さを 450.dp に完全統一して背面サイズの変化と4枚目の見切れを防止）
         HorizontalPager(
           state = pagerState,
-          modifier = Modifier.fillMaxWidth()
+          modifier = Modifier
+            .fillMaxWidth()
+            .height(450.dp),
+          verticalAlignment = Alignment.Top
         ) { page ->
           Column(
             modifier = Modifier
-              .fillMaxWidth()
-              .padding(horizontal = 4.dp, vertical = 8.dp),
-            horizontalAlignment = Alignment.CenterHorizontally
+              .fillMaxSize()
+              .verticalScroll(rememberScrollState())
+              .padding(horizontal = 4.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Top
           ) {
-            // ステップごとのカスタム図解イラスト
+            // ステップごとのアイコン／カスタム図解イラスト
             OnboardingIllustration(
               page = page,
               modifier = Modifier
-                .size(140.dp)
-                .padding(bottom = 12.dp)
+                .size(96.dp)
+                .padding(bottom = 8.dp)
             )
 
             when (page) {
@@ -142,9 +156,8 @@ fun OnboardingCarouselDialog(
                 onSelectLanguage = onSelectLanguage
               )
 
-              1 -> OnboardingPageTextOnly(
-                title = strings.onboardingStep2Title,
-                body = strings.onboardingStep2Body
+              1 -> OnboardingPage2MeasureModes(
+                strings = strings
               )
 
               2 -> OnboardingPage3Features(
@@ -166,7 +179,7 @@ fun OnboardingCarouselDialog(
           }
         }
 
-        Spacer(modifier = Modifier.height(14.dp))
+        Spacer(modifier = Modifier.height(10.dp))
 
         // ページインジケータードット
         Row(
@@ -191,7 +204,7 @@ fun OnboardingCarouselDialog(
           }
         }
 
-        Spacer(modifier = Modifier.height(18.dp))
+        Spacer(modifier = Modifier.height(14.dp))
 
         // 下部ナビゲーションボタン
         Row(
@@ -238,6 +251,21 @@ fun OnboardingCarouselDialog(
 
 @Composable
 private fun OnboardingIllustration(page: Int, modifier: Modifier = Modifier) {
+  if (page == 0) {
+    // 1枚目: Kayo-Clino の新しいアプリアイコンを表示
+    Box(
+      modifier = modifier,
+      contentAlignment = Alignment.Center
+    ) {
+      Image(
+        painter = painterResource(id = R.drawable.ic_kayo_icon),
+        contentDescription = "Kayo-Clino App Icon",
+        modifier = Modifier.fillMaxSize()
+      )
+    }
+    return
+  }
+
   val primary = MaterialTheme.colorScheme.primary
   val secondary = MaterialTheme.colorScheme.secondary
   val tertiary = MaterialTheme.colorScheme.tertiary
@@ -248,46 +276,26 @@ private fun OnboardingIllustration(page: Int, modifier: Modifier = Modifier) {
     shape = CircleShape,
     color = surfaceVariant.copy(alpha = 0.55f)
   ) {
-    Canvas(modifier = Modifier.padding(20.dp)) {
+    Canvas(modifier = Modifier.padding(16.dp)) {
       val cx = size.width / 2f
       val cy = size.height / 2f
       val r = size.minDimension / 2f
 
       when (page) {
-        0 -> {
-          // コンパス＆走向傾斜記号イラスト
-          drawCircle(color = primary, radius = r, style = Stroke(width = 6f))
-          drawLine(
-            color = primary,
-            start = Offset(cx - r * 0.7f, cy + r * 0.4f),
-            end = Offset(cx + r * 0.7f, cy - r * 0.4f),
-            strokeWidth = 8f,
-            cap = StrokeCap.Round
-          )
-          drawLine(
-            color = secondary,
-            start = Offset(cx, cy),
-            end = Offset(cx + r * 0.35f, cy + r * 0.55f),
-            strokeWidth = 8f,
-            cap = StrokeCap.Round
-          )
-          drawCircle(color = CompassNorthRed, radius = 10f, center = Offset(cx, cy - r + 10f))
-        }
-
         1 -> {
           // 地層斜面とスマホ背面密着のイラスト
           drawLine(
             color = secondary,
             start = Offset(cx - r * 0.85f, cy + r * 0.55f),
             end = Offset(cx + r * 0.85f, cy - r * 0.35f),
-            strokeWidth = 10f,
+            strokeWidth = 9f,
             cap = StrokeCap.Round
           )
           rotate(degrees = -28f, pivot = Offset(cx, cy)) {
             drawRoundRect(
               color = primary,
-              topLeft = Offset(cx - r * 0.5f, cy - 22f),
-              size = Size(r * 1.0f, 18f),
+              topLeft = Offset(cx - r * 0.5f, cy - 20f),
+              size = Size(r * 1.0f, 16f),
               cornerRadius = CornerRadius(6f, 6f)
             )
           }
@@ -299,8 +307,8 @@ private fun OnboardingIllustration(page: Int, modifier: Modifier = Modifier) {
             color = primary,
             topLeft = Offset(cx - r * 0.42f, cy - r * 0.75f),
             size = Size(r * 0.84f, r * 1.5f),
-            cornerRadius = CornerRadius(16f, 16f),
-            style = Stroke(width = 6f)
+            cornerRadius = CornerRadius(14f, 14f),
+            style = Stroke(width = 5.5f)
           )
           // 音量キー強調
           drawRoundRect(
@@ -335,6 +343,9 @@ private fun OnboardingIllustration(page: Int, modifier: Modifier = Modifier) {
   }
 }
 
+/**
+ * 1枚目: 「Kayo-Clino へようこそ」と「表示言語」のみをシンプルに表示
+ */
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
 private fun OnboardingPage1Language(
@@ -348,14 +359,7 @@ private fun OnboardingPage1Language(
     fontWeight = FontWeight.Bold,
     textAlign = TextAlign.Center
   )
-  Spacer(modifier = Modifier.height(10.dp))
-  Text(
-    text = strings.onboardingStep1Body,
-    style = MaterialTheme.typography.bodyMedium,
-    color = MaterialTheme.colorScheme.onSurfaceVariant,
-    textAlign = TextAlign.Center
-  )
-  Spacer(modifier = Modifier.height(14.dp))
+  Spacer(modifier = Modifier.height(16.dp))
 
   Row(
     verticalAlignment = Alignment.CenterVertically,
@@ -368,16 +372,16 @@ private fun OnboardingPage1Language(
     )
     Text(
       text = strings.languageSectionTitle,
-      style = MaterialTheme.typography.labelMedium,
+      style = MaterialTheme.typography.labelLarge,
       color = MaterialTheme.colorScheme.primary,
       fontWeight = FontWeight.Bold
     )
   }
-  Spacer(modifier = Modifier.height(6.dp))
+  Spacer(modifier = Modifier.height(10.dp))
 
   FlowRow(
     horizontalArrangement = Arrangement.spacedBy(8.dp, Alignment.CenterHorizontally),
-    verticalArrangement = Arrangement.spacedBy(4.dp),
+    verticalArrangement = Arrangement.spacedBy(6.dp),
     modifier = Modifier.fillMaxWidth()
   ) {
     AppLanguage.entries.forEach { lang ->
@@ -400,26 +404,77 @@ private fun OnboardingPage1Language(
   }
 }
 
+/**
+ * 2枚目: 「面測定」と「側面測定」を視覚的な強調カードで表示
+ */
 @Composable
-private fun OnboardingPageTextOnly(
-  title: String,
-  body: String
+private fun OnboardingPage2MeasureModes(
+  strings: AppStrings
 ) {
   Text(
-    text = title,
+    text = strings.onboardingStep2Title,
     style = MaterialTheme.typography.titleLarge,
     fontWeight = FontWeight.Bold,
     textAlign = TextAlign.Center
   )
-  Spacer(modifier = Modifier.height(10.dp))
-  Text(
-    text = body,
-    style = MaterialTheme.typography.bodyMedium,
-    color = MaterialTheme.colorScheme.onSurfaceVariant,
-    textAlign = TextAlign.Start
-  )
+  Spacer(modifier = Modifier.height(12.dp))
+
+  // 面測定 (背面密着) 強調カード
+  Surface(
+    shape = RoundedCornerShape(14.dp),
+    color = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.45f),
+    border = BorderStroke(1.5.dp, MaterialTheme.colorScheme.primary),
+    modifier = Modifier.fillMaxWidth()
+  ) {
+    Column(modifier = Modifier.padding(horizontal = 14.dp, vertical = 10.dp)) {
+      Text(
+        text = strings.modeSurfaceLabel,
+        style = MaterialTheme.typography.titleSmall,
+        fontWeight = FontWeight.ExtraBold,
+        color = MaterialTheme.colorScheme.primary
+      )
+      Spacer(modifier = Modifier.height(2.dp))
+      Text(
+        text = strings.onboardingStep2SurfaceDesc,
+        style = MaterialTheme.typography.bodySmall,
+        color = MaterialTheme.colorScheme.onSurface,
+        maxLines = 2,
+        overflow = TextOverflow.Ellipsis
+      )
+    }
+  }
+
+  Spacer(modifier = Modifier.height(8.dp))
+
+  // 側面測定 (伝統式) 強調カード
+  Surface(
+    shape = RoundedCornerShape(14.dp),
+    color = MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.45f),
+    border = BorderStroke(1.5.dp, MaterialTheme.colorScheme.secondary),
+    modifier = Modifier.fillMaxWidth()
+  ) {
+    Column(modifier = Modifier.padding(horizontal = 14.dp, vertical = 10.dp)) {
+      Text(
+        text = strings.modeEdgeLabel,
+        style = MaterialTheme.typography.titleSmall,
+        fontWeight = FontWeight.ExtraBold,
+        color = MaterialTheme.colorScheme.secondary
+      )
+      Spacer(modifier = Modifier.height(2.dp))
+      Text(
+        text = strings.onboardingStep2EdgeDesc,
+        style = MaterialTheme.typography.bodySmall,
+        color = MaterialTheme.colorScheme.onSurface,
+        maxLines = 2,
+        overflow = TextOverflow.Ellipsis
+      )
+    }
+  }
 }
 
+/**
+ * 3枚目: 「音量キーを押すだけで計測値をHOLD」と「アクセシビリティ 音声読み上げ」をシンプルに表示
+ */
 @Composable
 private fun OnboardingPage3Features(
   strings: AppStrings,
@@ -432,10 +487,10 @@ private fun OnboardingPage3Features(
     fontWeight = FontWeight.Bold,
     textAlign = TextAlign.Center
   )
-  Spacer(modifier = Modifier.height(10.dp))
+  Spacer(modifier = Modifier.height(6.dp))
   Text(
     text = strings.onboardingStep3Body,
-    style = MaterialTheme.typography.bodyMedium,
+    style = MaterialTheme.typography.bodySmall,
     color = MaterialTheme.colorScheme.onSurfaceVariant,
     textAlign = TextAlign.Center
   )
@@ -443,11 +498,12 @@ private fun OnboardingPage3Features(
 
   Surface(
     shape = RoundedCornerShape(14.dp),
-    color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f),
+    color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.55f),
+    border = BorderStroke(1.dp, MaterialTheme.colorScheme.primary.copy(alpha = 0.5f)),
     modifier = Modifier.fillMaxWidth()
   ) {
     Row(
-      modifier = Modifier.padding(horizontal = 14.dp, vertical = 10.dp),
+      modifier = Modifier.padding(horizontal = 14.dp, vertical = 12.dp),
       horizontalArrangement = Arrangement.SpaceBetween,
       verticalAlignment = Alignment.CenterVertically
     ) {
@@ -475,6 +531,10 @@ private fun OnboardingPage3Features(
   }
 }
 
+/**
+ * 4枚目: 説明文を省き、GPS磁気偏角とコンパス盤の初期設定コントロールのみをシンプルに配置
+ */
+@OptIn(ExperimentalLayoutApi::class)
 @Composable
 private fun OnboardingPage4Setup(
   strings: AppStrings,
@@ -491,14 +551,7 @@ private fun OnboardingPage4Setup(
     fontWeight = FontWeight.Bold,
     textAlign = TextAlign.Center
   )
-  Spacer(modifier = Modifier.height(6.dp))
-  Text(
-    text = strings.onboardingStep4Body,
-    style = MaterialTheme.typography.bodySmall,
-    color = MaterialTheme.colorScheme.onSurfaceVariant,
-    textAlign = TextAlign.Center
-  )
-  Spacer(modifier = Modifier.height(12.dp))
+  Spacer(modifier = Modifier.height(10.dp))
 
   FilledTonalButton(
     onClick = onRequestGpsDeclination,
@@ -522,9 +575,10 @@ private fun OnboardingPage4Setup(
     fontWeight = FontWeight.Bold
   )
 
-  Row(
-    horizontalArrangement = Arrangement.spacedBy(6.dp),
-    modifier = Modifier.padding(vertical = 4.dp)
+  FlowRow(
+    horizontalArrangement = Arrangement.spacedBy(6.dp, Alignment.CenterHorizontally),
+    verticalArrangement = Arrangement.spacedBy(2.dp),
+    modifier = Modifier.fillMaxWidth()
   ) {
     val presets = listOf(
       "Okinawa -5.5°" to -5.5f,

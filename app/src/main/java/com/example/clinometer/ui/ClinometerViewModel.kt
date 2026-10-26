@@ -11,6 +11,7 @@ import com.example.clinometer.model.ClinometerReading
 import com.example.clinometer.model.MeasureMode
 import com.example.clinometer.model.MeasurementRecord
 import com.example.clinometer.model.NotationFormat
+import com.example.clinometer.model.ThemeMode
 import com.example.clinometer.sensor.ClinometerSensorManager
 import com.example.clinometer.sensor.LocationDeclinationHelper
 import java.text.SimpleDateFormat
@@ -35,6 +36,7 @@ data class ClinometerUiState(
     deviceAzimuth = 35f
   ),
   val language: AppLanguage = AppLanguage.JA,
+  val themeMode: ThemeMode = ThemeMode.SYSTEM,
   val measureMode: MeasureMode = MeasureMode.SURFACE,
   val notationFormat: NotationFormat = NotationFormat.JAPANESE,
   val isHeld: Boolean = false,
@@ -73,6 +75,7 @@ class ClinometerViewModel(application: Application) : AndroidViewModel(applicati
     _uiState = MutableStateFlow(
       ClinometerUiState(
         language = saved.language,
+        themeMode = saved.themeMode,
         measureMode = saved.measureMode,
         notationFormat = saved.notationFormat,
         reverseEastWest = saved.reverseEastWest,
@@ -126,6 +129,11 @@ class ClinometerViewModel(application: Application) : AndroidViewModel(applicati
   fun setLanguage(language: AppLanguage) {
     storage.saveLanguage(language)
     _uiState.update { it.copy(language = language) }
+  }
+
+  fun setThemeMode(themeMode: ThemeMode) {
+    storage.saveThemeMode(themeMode)
+    _uiState.update { it.copy(themeMode = themeMode) }
   }
 
   fun setMeasureMode(mode: MeasureMode) {

@@ -9,19 +9,46 @@ android {
   compileSdk = 35
 
   defaultConfig {
-    applicationId = "com.example.clinometer"
+    applicationId = "io.github.justcat3456.kayoclino"
     minSdk = 26
     targetSdk = 35
-    versionCode = 2
-    versionName = "1.1.0"
+    versionCode = 3
+    versionName = "1.2.0"
 
     testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+  }
+
+  // F-Droid / IzzyOnDroid 等の OSS ストア要件：Google 独自の暗号化依存メタデータブロックを含めない
+  dependenciesInfo {
+    includeInApk = false
+    includeInBundle = false
+  }
+
+  signingConfigs {
+    val keystorePath = System.getenv("KEYSTORE_PATH")
+    val keystorePassword = System.getenv("KEYSTORE_PASSWORD")
+    val keyAlias = System.getenv("KEY_ALIAS")
+    val keyPassword = System.getenv("KEY_PASSWORD")
+
+    if (!keystorePath.isNullOrBlank() &&
+      !keystorePassword.isNullOrBlank() &&
+      !keyAlias.isNullOrBlank() &&
+      !keyPassword.isNullOrBlank() &&
+      file(keystorePath).exists()
+    ) {
+      create("release") {
+        storeFile = file(keystorePath)
+        storePassword = keystorePassword
+        this.keyAlias = keyAlias
+        this.keyPassword = keyPassword
+      }
+    }
   }
 
   buildTypes {
     release {
       isMinifyEnabled = false
-      signingConfig = signingConfigs.getByName("debug")
+      signingConfig = signingConfigs.findByName("release") ?: signingConfigs.getByName("debug")
       proguardFiles(
         getDefaultProguardFile("proguard-android-optimize.txt"),
         "proguard-rules.pro"

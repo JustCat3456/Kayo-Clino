@@ -21,6 +21,15 @@ enum class AppLanguage(
 }
 
 /**
+ * アプリのカラーモード (通常 / ダークモード / System)
+ */
+enum class ThemeMode {
+  LIGHT,
+  DARK,
+  SYSTEM
+}
+
+/**
  * クリノメーターの測定モード
  */
 enum class MeasureMode {

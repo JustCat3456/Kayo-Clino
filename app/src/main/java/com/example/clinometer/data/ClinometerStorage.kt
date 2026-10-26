@@ -5,6 +5,7 @@ import com.example.clinometer.model.AppLanguage
 import com.example.clinometer.model.MeasureMode
 import com.example.clinometer.model.MeasurementRecord
 import com.example.clinometer.model.NotationFormat
+import com.example.clinometer.model.ThemeMode
 import org.json.JSONArray
 import org.json.JSONObject
 
@@ -18,6 +19,7 @@ class ClinometerStorage(context: Context) {
   data class SavedSettings(
     val hasCompletedOnboarding: Boolean,
     val language: AppLanguage,
+    val themeMode: ThemeMode,
     val measureMode: MeasureMode,
     val notationFormat: NotationFormat,
     val reverseEastWest: Boolean,
@@ -31,6 +33,9 @@ class ClinometerStorage(context: Context) {
     val langCode = prefs.getString(KEY_LANGUAGE, AppLanguage.JA.code) ?: AppLanguage.JA.code
     val language = AppLanguage.entries.find { it.code == langCode } ?: AppLanguage.JA
 
+    val themeName = prefs.getString(KEY_THEME_MODE, ThemeMode.SYSTEM.name)
+    val themeMode = ThemeMode.entries.find { it.name == themeName } ?: ThemeMode.SYSTEM
+
     val modeName = prefs.getString(KEY_MEASURE_MODE, MeasureMode.SURFACE.name)
     val measureMode = MeasureMode.entries.find { it.name == modeName } ?: MeasureMode.SURFACE
 
@@ -41,6 +46,7 @@ class ClinometerStorage(context: Context) {
     return SavedSettings(
       hasCompletedOnboarding = prefs.getBoolean(KEY_ONBOARDING_DONE, false),
       language = language,
+      themeMode = themeMode,
       measureMode = measureMode,
       notationFormat = notationFormat,
       reverseEastWest = prefs.getBoolean(KEY_REVERSE_EW, true),
@@ -57,6 +63,10 @@ class ClinometerStorage(context: Context) {
 
   fun saveLanguage(language: AppLanguage) {
     prefs.edit().putString(KEY_LANGUAGE, language.code).apply()
+  }
+
+  fun saveThemeMode(themeMode: ThemeMode) {
+    prefs.edit().putString(KEY_THEME_MODE, themeMode.name).apply()
   }
 
   fun saveMeasureMode(mode: MeasureMode) {
@@ -152,6 +162,7 @@ class ClinometerStorage(context: Context) {
     private const val PREFS_NAME = "clinometer_prefs"
     private const val KEY_ONBOARDING_DONE = "onboarding_done"
     private const val KEY_LANGUAGE = "language"
+    private const val KEY_THEME_MODE = "theme_mode"
     private const val KEY_MEASURE_MODE = "measure_mode"
     private const val KEY_NOTATION_FORMAT = "notation_format"
     private const val KEY_REVERSE_EW = "reverse_ew"

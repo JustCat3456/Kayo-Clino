@@ -28,7 +28,20 @@ jobs:
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
 
+      - name: Decode Release Keystore (if configured in Secrets)
+        env:
+          KEYSTORE_BASE64: ${{ secrets.KEYSTORE_BASE64 }}
+        run: |
+          if [ -n "$KEYSTORE_BASE64" ]; then
+            echo "$KEYSTORE_BASE64" | base64 --decode > release-keystore.jks
+          fi
+
       - name: Build Release APK
+        env:
+          KEYSTORE_PATH: ${{ github.workspace }}/release-keystore.jks
+          KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
+          KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
+          KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
         run: ./gradlew assembleRelease
 
       - name: Rename APK for Release
@@ -46,18 +59,19 @@ jobs:
           body: |
             ### 🌺 Kayo-Clino（地学クリノメーター） ${{ github.ref_name }}
             
-            Android端末向けの地学クリノメーター公式リリースです。
+            Android端末向けの地学クリノメーター公式リリースです（Package ID: `io.github.justcat3456.kayoclino`）。
             
             #### インストール方法
             1. 下記の Assets から `kayo-clino-${{ github.ref_name }}.apk` をAndroid端末にダウンロードしてください。
             2. ダウンロード完了後、APKファイルを開いてインストールしてください（「不明なアプリのインストール」の許可が必要です）。
             
-            #### 主な機能・v1.1.0 ハイライト
-            - 🌺 **沖縄県名護市「嘉陽層（Kayo Formation）」にちなむ『Kayo-Clino』へのブランド刷新＆新アプリアイコン**
+            #### 主な機能・v1.2.0 ハイライト
+            - 🌺 **嘉陽層（Kayo Formation）モチーフの新アプリアイコン全面適用**（Adaptive Icon・モノクロアイコン・アプリ内UI）
+            - 🎨 **カラーモード切替（ライト / ダーク / 自動）** に対応
+            - ✨ **初期設定カルーセル（Onboarding）の刷新**：全スライドでカードサイズを統一し、面測定・側面測定の強調カードや音量キーHOLD・GPS偏角設定をシンプルに整理
+            - 🧪 **設定画面のコンパクト化**：折りたたみ式の「デバッグ」階層メニュー（フラスコアイコン）にシミュレーションモード等を格納
+            - 📦 **OSS ストア配布対応**：パッケージ名を `io.github.justcat3456.kayoclino` へ刷新し、F-Droid / IzzyOnDroid / Obtainium に対応
             - 🧭 **面測定（背面密着）& 側面測定（伝統式）**、日本式（E/W逆転目盛り）・右手則(RHR)・Dip/DipDir 表記切替
-            - 🛰️ **GPS + 世界磁気モデル (WMM)** による現在地の磁気偏角自動計算
-            - 📐 **背面カメラ出っ張り「水平ゼロ点補正」**
-            - 🔊 **アクセシビリティ**：音量キー連動 HOLD、音声読み上げ (TTS)、HOLD 完了／解除の振動パターン識別
-            - 📓 **デジタル野帳・設定データの端末内永続化** ＆ CSV エクスポート
-            - 🌍 **初回オンボーディングカルーセル ＆ 6言語（日・英・繁・簡・韓・西）フラットJSON対応**
-            - 🪨 **構造地質コラム「What is "Kayo"?」**：嘉陽層のタービダイト・シェブロン褶曲の学術解説と露頭写真（Wikimedia Commons 引用）
+            - 🛰️ **GPS + 世界磁気モデル (WMM)** による現在地の磁気偏角自動計算 ＆ 背面カメラ出っ張り「水平ゼロ点補正」
+            - 🔊 **アクセシビリティ**：音量キー連動 HOLD、音声読み上げ (TTS)、振動パターン識別
+            - 📓 **デジタル野帳・設定データの端末内永続化** ＆ CSV エクスポート・6言語（日・英・繁・簡・韓・西）対応

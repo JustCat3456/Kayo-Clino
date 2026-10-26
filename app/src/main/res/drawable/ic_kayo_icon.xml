@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+  android:width="108dp"
+  android:height="108dp"
+  android:viewportWidth="108"
+  android:viewportHeight="108">
+
+  <group>
+    <!-- Squircle Clip Path (rect x=4 y=4 width=100 height=100 rx=24 ry=24) -->
+    <clip-path android:pathData="M28,4 L80,4 A24,24 0,0 1,104 28 L104,80 A24,24 0,0 1,80 104 L28,104 A24,24 0,0 1,4 80 L4,28 A24,24 0,0 1,28 4 Z" />
+
+    <!-- Background: Deep Okinawa Ocean Slate -->
+    <path
+      android:fillColor="#0B1120"
+      android:pathData="M0,0h108v108h-108z" />
+
+    <!-- Kayo Formation (嘉陽層) Tilted Turbidite Strata Bands -->
+    <path
+      android:fillColor="#2A1D00"
+      android:pathData="M0,76 L108,32 L108,108 L0,108 Z" />
+    <path
+      android:fillColor="#422C00"
+      android:pathData="M0,88 L108,44 L108,108 L0,108 Z" />
+    <path
+      android:fillColor="#5E4200"
+      android:pathData="M0,100 L108,56 L108,108 L0,108 Z" />
+
+    <!-- Clinometer Compass Dial Base -->
+    <path
+      android:fillColor="#111827"
+      android:pathData="M54,54m-31,0a31,31 0,1 1,62 0a31,31 0,1 1,-62 0" />
+
+    <!-- Bedding Plane Cross-Section Inside Dial (#5E4200) -->
+    <path
+      android:fillColor="#5E4200"
+      android:pathData="M26,66 L80,42 A30,30 0,0 1,26 66 Z" />
+
+    <!-- Outer Compass Ring (Strike Cyan #38BDF8) -->
+    <path
+      android:fillColor="#00000000"
+      android:pathData="M54,54m-30,0a30,30 0,1 1,60 0a30,30 0,1 1,-60 0"
+      android:strokeWidth="3.2"
+      android:strokeColor="#38BDF8" />
+
+    <!-- Inner Bullseye Ring -->
+    <path
+      android:fillColor="#00000000"
+      android:pathData="M54,54m-13,0a13,13 0,1 1,26 0a13,13 0,1 1,-26 0"
+      android:strokeWidth="1.2"
+      android:strokeColor="#475569" />
+
+    <!-- N/E/S/W Cardinal Ticks -->
+    <path
+      android:fillColor="#00000000"
+      android:pathData="M54,24 L54,29 M54,79 L54,84 M24,54 L29,54 M79,54 L84,54"
+      android:strokeWidth="2.2"
+      android:strokeColor="#94A3B8"
+      android:strokeLineCap="round" />
+
+    <!-- Dip Vector (Amber Gold #FBBF24) -->
+    <path
+      android:fillColor="#00000000"
+      android:pathData="M54,54 L63,72"
+      android:strokeWidth="3.8"
+      android:strokeColor="#FBBF24"
+      android:strokeLineCap="round" />
+    <path
+      android:fillColor="#FBBF24"
+      android:pathData="M63,72m-3.2,0a3.2,3.2 0,1 1,6.4 0a3.2,3.2 0,1 1,-6.4 0" />
+
+    <!-- Strike Line (Sky Cyan #38BDF8) -->
+    <path
+      android:fillColor="#00000000"
+      android:pathData="M29,65.5 L79,42.5"
+      android:strokeWidth="4.0"
+      android:strokeColor="#38BDF8"
+      android:strokeLineCap="round" />
+
+    <!-- Magnetic North Pointer (Red #EF4444) -->
+    <path
+      android:fillColor="#EF4444"
+      android:pathData="M54,21 L59,32 L54,29.5 L49,32 Z" />
+
+    <!-- Bullseye Spirit Level Bubble (Emerald Green #10B981) -->
+    <path
+      android:fillColor="#10B981"
+      android:pathData="M54,54m-4.8,0a4.8,4.8 0,1 1,9.6 0a4.8,4.8 0,1 1,-9.6 0" />
+    <path
+      android:fillColor="#FFFFFF"
+      android:pathData="M52.5,52.5m-1.4,0a1.4,1.4 0,1 1,2.8 0a1.4,1.4 0,1 1,-2.8 0" />
+  </group>
+</vector>

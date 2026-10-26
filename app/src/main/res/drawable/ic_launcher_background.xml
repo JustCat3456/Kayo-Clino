@@ -9,14 +9,20 @@
     android:fillColor="#0B1120"
     android:pathData="M0,0h108v108h-108z" />
 
-  <!-- 嘉陽層 (Kayo Formation) モチーフの傾斜互層ストライプ (アンバーブラウン系) -->
-  <path
-    android:fillColor="#2A1D00"
-    android:pathData="M0,76 L108,32 L108,108 L0,108 Z" />
-  <path
-    android:fillColor="#422C00"
-    android:pathData="M0,88 L108,44 L108,108 L0,108 Z" />
-  <path
-    android:fillColor="#5E4200"
-    android:pathData="M0,100 L108,56 L108,108 L0,108 Z" />
+  <!-- 嘉陽層 (Kayo Formation) モチーフの傾斜互層ストライプ (Adaptive Icon セーフゾーン 72x72 内に最適化) -->
+  <group
+    android:pivotX="54"
+    android:pivotY="54"
+    android:scaleX="0.72"
+    android:scaleY="0.72">
+    <path
+      android:fillColor="#2A1D00"
+      android:pathData="M-20,80 L128,20 L128,128 L-20,128 Z" />
+    <path
+      android:fillColor="#422C00"
+      android:pathData="M-20,92 L128,32 L128,128 L-20,128 Z" />
+    <path
+      android:fillColor="#5E4200"
+      android:pathData="M-20,104 L128,44 L128,128 L-20,128 Z" />
+  </group>
 </vector>

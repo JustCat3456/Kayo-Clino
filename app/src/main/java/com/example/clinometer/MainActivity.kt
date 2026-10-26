@@ -13,11 +13,13 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.viewModels
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.clinometer.domain.ClinometerCalculator
 import com.example.clinometer.model.AppLanguage
+import com.example.clinometer.model.ThemeMode
 import com.example.clinometer.ui.ClinometerScreen
 import com.example.clinometer.ui.ClinometerViewModel
 import com.example.clinometer.ui.i18n.AppStringsProvider
@@ -40,8 +42,14 @@ class MainActivity : ComponentActivity(), TextToSpeech.OnInitListener {
     tts = TextToSpeech(this, this)
 
     setContent {
-      ClinometerTheme {
-        val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+      val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+      val isDark = when (uiState.themeMode) {
+        ThemeMode.LIGHT -> false
+        ThemeMode.DARK -> true
+        ThemeMode.SYSTEM -> isSystemInDarkTheme()
+      }
+
+      ClinometerTheme(darkTheme = isDark) {
         val strings = remember(uiState.language) {
           AppStringsProvider.load(this@MainActivity, uiState.language)
         }
@@ -53,6 +61,7 @@ class MainActivity : ComponentActivity(), TextToSpeech.OnInitListener {
             if (isNowHeld) speakReadingIfNeeded()
           },
           onSelectLanguage = { viewModel.setLanguage(it) },
+          onSelectThemeMode = { viewModel.setThemeMode(it) },
           onSelectMeasureMode = { viewModel.setMeasureMode(it) },
           onSelectNotationFormat = { viewModel.setNotationFormat(it) },
           onToggleReverseEastWest = { viewModel.toggleReverseEastWest() },

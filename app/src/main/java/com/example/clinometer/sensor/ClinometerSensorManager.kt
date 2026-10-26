@@ -33,7 +33,7 @@ class ClinometerSensorManager(context: Context) {
 
   /**
    * 3x3 回転行列 (FloatArray(9)) と磁気センサー精度 (Int) のペアを流す Flow
-   * POCO F7 の 120Hz 表示に合わせ SENSOR_DELAY_GAME (約50Hz) で取得
+   * 高リフレッシュレート表示に合わせ SENSOR_DELAY_GAME (約50Hz) で取得
    */
   fun rotationMatrixFlow(): Flow<Pair<FloatArray, Int>> = callbackFlow {
     val rotationMatrix = FloatArray(9)

@@ -4,6 +4,7 @@ import android.content.Context
 import com.example.clinometer.model.AppLanguage
 import com.example.clinometer.model.MeasureMode
 import com.example.clinometer.model.NotationFormat
+import com.example.clinometer.model.ThemeMode
 import java.util.Locale
 import org.json.JSONObject
 
@@ -48,6 +49,11 @@ data class AppStrings(
   val csvCopiedToast: String,
   val settingsTitle: String,
   val languageSectionTitle: String,
+  val themeSectionTitle: String,
+  val themeLightLabel: String,
+  val themeDarkLabel: String,
+  val themeSystemLabel: String,
+  val debugMenuBtn: String,
   val declinationSectionTitle: (Float) -> String,
   val declinationHint: String,
   val gpsAutoDeclinationBtn: String,
@@ -75,6 +81,8 @@ data class AppStrings(
   val onboardingStep1Body: String,
   val onboardingStep2Title: String,
   val onboardingStep2Body: String,
+  val onboardingStep2SurfaceDesc: String,
+  val onboardingStep2EdgeDesc: String,
   val onboardingStep3Title: String,
   val onboardingStep3Body: String,
   val onboardingStep4Title: String,
@@ -175,6 +183,12 @@ data class AppStrings(
     NotationFormat.RIGHT_HAND_RULE -> formatRhrShort
     NotationFormat.DIP_DIRECTION -> formatDipDirShort
   }
+
+  fun themeLabel(mode: ThemeMode): String = when (mode) {
+    ThemeMode.LIGHT -> themeLightLabel
+    ThemeMode.DARK -> themeDarkLabel
+    ThemeMode.SYSTEM -> themeSystemLabel
+  }
 }
 
 object AppStringsProvider {
@@ -245,6 +259,11 @@ object AppStringsProvider {
       csvCopiedToast = str("csvCopiedToast"),
       settingsTitle = str("settingsTitle", "Clinometer Settings"),
       languageSectionTitle = str("languageSectionTitle", "Language / 表示言語"),
+      themeSectionTitle = str("themeSectionTitle", "Color Mode"),
+      themeLightLabel = str("themeLightLabel", "Light"),
+      themeDarkLabel = str("themeDarkLabel", "Dark"),
+      themeSystemLabel = str("themeSystemLabel", "Auto"),
+      debugMenuBtn = str("debugMenuBtn", "Debug"),
       declinationSectionTitle = { dec ->
         str("declinationSectionPattern", "Magnetic Declination: %1\$.1f°").format(Locale.US, dec)
       },
@@ -280,6 +299,8 @@ object AppStringsProvider {
       onboardingStep1Body = str("onboardingStep1Body"),
       onboardingStep2Title = str("onboardingStep2Title"),
       onboardingStep2Body = str("onboardingStep2Body"),
+      onboardingStep2SurfaceDesc = str("onboardingStep2SurfaceDesc"),
+      onboardingStep2EdgeDesc = str("onboardingStep2EdgeDesc"),
       onboardingStep3Title = str("onboardingStep3Title"),
       onboardingStep3Body = str("onboardingStep3Body"),
       onboardingStep4Title = str("onboardingStep4Title"),
