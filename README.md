@@ -1,12 +1,36 @@
 # <img src="docs/screenshots/app_icon_kayo.svg" width="38" valign="middle" alt="Kayo-Clino Icon" /> Kayo-Clino — 地学クリノメーター (Geological Clinometer for Android)
 
+[![Release](https://img.shields.io/github/v/release/JustCat3456/Kayo-Clino?color=38BDF8&logo=github)](https://github.com/JustCat3456/Kayo-Clino/releases/latest)
 [![Platform](https://img.shields.io/badge/Platform-Android%20(API%2026--35)-3DDC84?logo=android&logoColor=white)](#)
 [![Kotlin](https://img.shields.io/badge/Kotlin-2.0.21-7F52FF?logo=kotlin&logoColor=white)](#)
 [![UI](https://img.shields.io/badge/Jetpack%20Compose-Material%203-4285F4?logo=jetpackcompose&logoColor=white)](#)
+[![License: MIT](https://img.shields.io/badge/License-MIT-FBBF24.svg)](LICENSE)
 
 **`Kayo-Clino`（カヨウ・クリノ）** は、沖縄本島北部・名護市東海岸に分布し、日本屈指のタービダイト砂岩泥岩互層と褶曲構造で知られる国指定天然記念物 **「嘉陽層の褶曲（Kayo Formation）」** から名付けられた、野外地質調査（巡検・ルートマップ作成・構造地質解析）向けの **Material 3 デジタルクリノメーター** です。
 
 地層面や断層面の **走向（Strike）** と **傾斜（Dip）** を迅速・正確・片手で測定できるよう、複雑な下タブや多階層メニューを排除し、**「露頭の前で取り出して1秒で測れるシンプルな道具」** としての使い勝手を追求しています。
+
+---
+
+## 📥 ダウンロード / インストール (Download)
+
+<p align="left">
+  <a href="https://github.com/JustCat3456/Kayo-Clino/releases/latest">
+    <img src="docs/badges/get-it-on-github.svg" height="54" alt="Get it on GitHub" />
+  </a>
+  &nbsp;
+  <a href="https://apps.obtainium.imranr.dev/redirect?r=obtainium://add/https://github.com/JustCat3456/Kayo-Clino">
+    <img src="docs/badges/get-it-on-obtainium.svg" height="54" alt="Download from Obtainium" />
+  </a>
+  &nbsp;
+  <a href="https://www.komistore.app">
+    <img src="docs/badges/get-it-on-komi-store.svg" height="54" alt="Download from Komi Store" />
+  </a>
+</p>
+
+- **GitHub Releases**: [最新リリースページ](https://github.com/JustCat3456/Kayo-Clino/releases/latest) から署名済み APK（`kayo-clino-v1.x.x.apk`）を直接ダウンロードしてインストールできます。
+- **Obtainium**: 端末に [Obtainium](https://github.com/ImranR98/Obtainium) が入っている場合、上の **Download from Obtainium** バッジをタップするだけで自動更新対象としてワンタップ登録できます。
+- **Komi Store**: OSS アプリストア [Komi Store](https://www.komistore.app) 内で `JustCat3456/Kayo-Clino` を検索してインストール・自動更新できます。
 
 ---
 
@@ -15,7 +39,7 @@
 | ① メイン計測画面 (面測定・HOLD) | ② 初回オンボーディング (4ステップ) | ③ 設定 (カラーモード・ゼロ点補正) |
 | :---: | :---: | :---: |
 | ![メイン計測画面](docs/screenshots/main_clinometer.png) | ![オンボーディングカルーセル](docs/screenshots/onboarding_carousel.png) | ![野帳と設定](docs/screenshots/field_note_and_settings.png) |
-| **走向線(水色)・最大傾斜線(黄)** と<br>気泡水準器をリアルタイム描画 | 全スライド共通のカードサイズで<br>言語・測定モード・音声・偏角を設定 | カラーモード(通常/ダーク/System)・<br>カメラ出っ張り補正・デバッグ階層メニュー |
+| **走向線(水色)・最大傾斜線(黄)** と<br>気泡水準器をリアルタイム描画 | 全スライド共通のカードサイズで<br>言語・測定モード・音声・偏角を設定 | カラーモード(ライト/ダーク/自動)・<br>カメラ出っ張り補正・デバッグ階層メニュー |
 
 ---
 
@@ -47,7 +71,7 @@
 
 ### 6. 初回オンボーディング・カルーセル ＆ 6言語・3カラーモード対応
 - 初回起動時にのみ、カードサイズを全スライドで統一したシンプルな 4 ページのカルーセルで初期設定（言語選択、面測定・側面測定の確認、音量キーHOLD・音声読み上げ、GPS磁気偏角）を案内します（設定画面の「デバッグ」メニューからいつでも再表示可能）。
-- アプリ内で **日本語 (`ja`)・英語 (`en`)・繁体字中国語 (`zh-TW`)・簡体字中国語 (`zh-CN`)・韓国語 (`ko`)・スペイン語 (`es`)** の 6 言語、および **通常（ライト）・ダークモード・System** の 3 カラーモードを即座に切り替えられます。
+- アプリ内で **日本語 (`ja`)・英語 (`en`)・繁体字中国語 (`zh-TW`)・簡体字中国語 (`zh-CN`)・韓国語 (`ko`)・スペイン語 (`es`)** の 6 言語、および **ライト・ダーク・自動** の 3 カラーモードを即座に切り替えられます。
 
 ### 7. ローカル永続化された「デジタル野帳」＆ CSV エクスポート
 - 露頭番号・岩相メモ・GPS座標・日時とともに保存した計測記録や各種設定はすべて端末内に永続保存され、ワンタップで **QGIS や Excel にそのまま貼り付けられる CSV 形式** でクリップボードにコピーできます。
@@ -137,8 +161,9 @@ kayo-clino/
 │       │   ├── ClinometerDial.kt        # コンパス盤・走向傾斜記号・気泡水準器Canvas
 │       │   └── OnboardingCarouselDialog.kt # 初回起動4ステップカルーセル
 │       ├── i18n/
-│       │   └── AppStrings.kt            # 日英バイリンガル辞書
+│       │   └── AppStrings.kt            # 6言語JSONリソースローダー
 │       └── theme/                       # Material 3 高視認性カラー＆テーマ定義
 ├── app/src/test/                        # 幾何計算・ゼロ点補正・音声フォーマットの単体テスト
+├── docs/badges/                         # 配布ストア用ダウンロードバッジ (GitHub / Obtainium / Komi Store)
 └── docs/screenshots/                    # README用スクリーンショット画像 (SVG / PNG)
 ```
