@@ -19,5 +19,5 @@ dependencyResolutionManagement {
   }
 }
 
-rootProject.name = "ClinometerApp"
+rootProject.name = "Kayo-Clino"
 include(":app")

@@ -1,5 +1,6 @@
 package com.example.clinometer.domain
 
+import com.example.clinometer.model.AppLanguage
 import com.example.clinometer.model.ClinometerReading
 import com.example.clinometer.model.MeasureMode
 import com.example.clinometer.model.NotationFormat
@@ -13,7 +14,7 @@ import kotlin.math.sin
 import kotlin.math.sqrt
 
 /**
- * 地学用クリノメーターの幾何計算および表記フォーマット変換を行うクラス
+ * 地学用クリノメーターの幾何計算・カメラバンプ補正・表記フォーマット変換を行うクラス
  */
 object ClinometerCalculator {
 
@@ -28,33 +29,55 @@ object ClinometerCalculator {
    *
    * @param rotationMatrix 長さ9以上の回転行列配列
    * @param mode 測定モード (面測定 or 側面測定)
-   * @param declinationDeg 磁気偏角 (度: 東偏が正、西偏が負。日本付近は約 -7.5°)
+   * @param declinationDeg 磁気偏角 (度: 東偏が正、西偏が負)
+   * @param pitchOffsetDeg カメラ出っ張りゼロ点補正用ピッチオフセット (度)
+   * @param rollOffsetDeg カメラ出っ張りゼロ点補正用ロールオフセット (度)
    */
   fun computeFromRotationMatrix(
     rotationMatrix: FloatArray,
     mode: MeasureMode,
-    declinationDeg: Float = 0f
+    declinationDeg: Float = 0f,
+    pitchOffsetDeg: Float = 0f,
+    rollOffsetDeg: Float = 0f
   ): ClinometerReading {
     require(rotationMatrix.size >= 9) { "rotationMatrix must have at least 9 elements" }
 
-    // 端末 Y 軸 (画面上方向・長辺) のワールド座標成分
-    val yEast = rotationMatrix[1]
-    val yNorth = rotationMatrix[4]
-    val yUp = rotationMatrix[7]
+    // カメラ出っ張り補正 (デバイス座標系での法線・軸の微調整)
+    val pRad = -pitchOffsetDeg * DEG_TO_RAD
+    val rRad = -rollOffsetDeg * DEG_TO_RAD
+    val cosP = cos(pRad)
+    val sinP = sin(pRad)
+    val cosR = cos(rRad)
+    val sinR = sin(rRad)
 
-    // 端末 Z 軸 (画面法線方向) のワールド座標成分
-    val zEast = rotationMatrix[2]
-    val zNorth = rotationMatrix[5]
-    val zUp = rotationMatrix[8]
+    // 元の回転行列の列ベクトル (デバイス X, Y, Z 軸のワールド成分)
+    val rawXEast = rotationMatrix[0]
+    val rawXNorth = rotationMatrix[3]
+    val rawXUp = rotationMatrix[6]
 
-    // 端末 X 軸 (画面右方向) のワールド座標成分
-    val xEast = rotationMatrix[0]
-    val xNorth = rotationMatrix[3]
-    val xUp = rotationMatrix[6]
+    val rawYEast = rotationMatrix[1]
+    val rawYNorth = rotationMatrix[4]
+    val rawYUp = rotationMatrix[7]
+
+    val rawZEast = rotationMatrix[2]
+    val rawZNorth = rotationMatrix[5]
+    val rawZUp = rotationMatrix[8]
+
+    // ロール (Y軸回り) および ピッチ (X軸回り) の微小オフセット回転を適用した補正後法線 Z' と Y'
+    val zEast = rawZEast * (cosR * cosP) + rawXEast * sinR + rawYEast * (-cosR * sinP)
+    val zNorth = rawZNorth * (cosR * cosP) + rawXNorth * sinR + rawYNorth * (-cosR * sinP)
+    val zUp = rawZUp * (cosR * cosP) + rawXUp * sinR + rawYUp * (-cosR * sinP)
+
+    val yEast = rawYEast * cosP + rawZEast * sinP
+    val yNorth = rawYNorth * cosP + rawZNorth * sinP
+    val yUp = rawYUp * cosP + rawZUp * sinP
+
+    val xEast = rawXEast * cosR - rawZEast * sinR
+    val xNorth = rawXNorth * cosR - rawZNorth * sinR
+    val xUp = rawXUp * cosR - rawZUp * sinR
 
     // 端末長辺の水平方位角 (0..360°)
     val rawDeviceAzimuth = if (abs(yEast) < 1e-4f && abs(yNorth) < 1e-4f) {
-      // 端末がほぼ直立してY軸が鉛直に近い場合はZ軸から方位を補完
       atan2(zEast, zNorth) * RAD_TO_DEG
     } else {
       atan2(yEast, yNorth) * RAD_TO_DEG
@@ -62,7 +85,6 @@ object ClinometerCalculator {
     val deviceAzimuth = normalizeDegrees(rawDeviceAzimuth + declinationDeg)
 
     // 水準器バブル用の傾き成分 (-1.0..1.0)
-    // 端末を水平に置いたとき、高い側へ気泡が移動するように符号を設定
     val tiltX = (-xUp).coerceIn(-1f, 1f)
     val tiltY = (-yUp).coerceIn(-1f, 1f)
 
@@ -100,9 +122,6 @@ object ClinometerCalculator {
     }
   }
 
-  /**
-   * 面測定モード: 端末背面を地層面に密着させたときの法線ベクトルから算出
-   */
   private fun computeSurfaceMode(
     zEast: Float,
     zNorth: Float,
@@ -114,16 +133,14 @@ object ClinometerCalculator {
     tiltY: Float,
     declinationDeg: Float
   ): ClinometerReading {
-    // オーバーハング等で画面が下向き (zUp < 0) の場合も上向き法線に揃えて地層面を評価
+    val norm = sqrt(zEast * zEast + zNorth * zNorth + zUp * zUp).coerceAtLeast(1e-6f)
     val sign = if (zUp >= 0f) 1f else -1f
-    val nx = zEast * sign
-    val ny = zNorth * sign
-    val nz = (zUp * sign).coerceIn(0f, 1f)
+    val nx = (zEast / norm) * sign
+    val ny = (zNorth / norm) * sign
+    val nz = ((zUp / norm) * sign).coerceIn(0f, 1f)
 
-    // 最大傾斜角 Dip (0..90°)
     val dipAngle = (acos(nz) * RAD_TO_DEG).coerceIn(0f, 90f)
 
-    // 水平に近い場合 (Dip < 0.5°) は端末の向きを基準にする
     val horizontalMag = sqrt(nx * nx + ny * ny)
     val dipDirection = if (horizontalMag < 1e-3f) {
       normalizeDegrees(deviceAzimuth + 90f)
@@ -132,7 +149,6 @@ object ClinometerCalculator {
       normalizeDegrees(rawDipDir + declinationDeg)
     }
 
-    // 右手則 (Right-Hand Rule): 走向方向を向いたとき右側(+90°)が傾斜方向になる
     val strikeAzimuth = normalizeDegrees(dipDirection - 90f)
 
     return ClinometerReading(
@@ -147,9 +163,6 @@ object ClinometerCalculator {
     )
   }
 
-  /**
-   * 側面測定モード (伝統式): 端末の長辺 (Y軸) を地層面に当てて計測
-   */
   private fun computeEdgeMode(
     xEast: Float,
     xNorth: Float,
@@ -164,19 +177,14 @@ object ClinometerCalculator {
     tiltY: Float,
     declinationDeg: Float
   ): ClinometerReading {
-    // 長辺の水平面に対する傾き角 (0..90°)
     val dipAngle = (asin(abs(yUp).coerceIn(0f, 1f)) * RAD_TO_DEG).coerceIn(0f, 90f)
-
-    // 長辺が向いている水平方位を走向とする
     val strikeAzimuth = deviceAzimuth
 
-    // 長辺が下っている方向、または画面表側の向きから傾斜方位を決定
     val downSlopeX = if (yUp <= 0f) yEast else -yEast
     val downSlopeY = if (yUp <= 0f) yNorth else -yNorth
     val dipDirection = if (abs(yUp) > 0.05f) {
       normalizeDegrees(atan2(downSlopeX, downSlopeY) * RAD_TO_DEG + declinationDeg)
     } else {
-      // 水平に当てて走向を測っているときは長辺と直交する方向
       val crossHoriz = atan2(xEast, xNorth) * RAD_TO_DEG
       normalizeDegrees(crossHoriz + declinationDeg)
     }
@@ -193,19 +201,12 @@ object ClinometerCalculator {
     )
   }
 
-  /**
-   * 角度を 0.0 <= deg < 360.0 に正規化する
-   */
   fun normalizeDegrees(degrees: Float): Float {
     val mod = degrees % 360f
     return if (mod < 0f) mod + 360f else mod
   }
 
-  /**
-   * 日本式走向表記に変換する (例: "N 32° E", "N 15° W", "N-S", "E-W")
-   */
   fun formatJapaneseStrike(strikeAzimuth: Float): String {
-    // 走向は 180° 周期の直線なので 0..179° の範囲で北基準に変換
     val halfCircle = ((normalizeDegrees(strikeAzimuth).roundToInt()) % 180 + 180) % 180
     return when {
       halfCircle == 0 -> "N-S (N 0° E)"
@@ -215,21 +216,28 @@ object ClinometerCalculator {
     }
   }
 
-  /**
-   * 日本式傾斜表記に変換する (例: "42° SE", "0° (水平)", "90° (直立)")
-   */
-  fun formatJapaneseDip(dipAngle: Float, dipDirection: Float): String {
+  fun formatJapaneseDip(
+    dipAngle: Float,
+    dipDirection: Float,
+    language: AppLanguage = AppLanguage.JA
+  ): String {
     val roundedDip = dipAngle.roundToInt().coerceIn(0, 90)
     return when (roundedDip) {
-      0 -> "0° (水平)"
-      90 -> "90° (直立)"
+      0 -> when (language) {
+        AppLanguage.JA, AppLanguage.ZH_TW, AppLanguage.ZH_CN -> "0° (水平)"
+        AppLanguage.KO -> "0° (수평)"
+        AppLanguage.ES -> "0° (Horiz)"
+        AppLanguage.EN -> "0° (Flat)"
+      }
+      90 -> when (language) {
+        AppLanguage.JA, AppLanguage.ZH_TW, AppLanguage.ZH_CN -> "90° (直立)"
+        AppLanguage.KO -> "90° (수직)"
+        AppLanguage.ES, AppLanguage.EN -> "90° (Vert)"
+      }
       else -> "${roundedDip}° ${toCardinal8(dipDirection)}"
     }
   }
 
-  /**
-   * 指定されたフォーマットに応じた走向テキストを返す
-   */
   fun formatStrike(reading: ClinometerReading, format: NotationFormat): String {
     return when (format) {
       NotationFormat.JAPANESE -> formatJapaneseStrike(reading.strikeAzimuth)
@@ -240,12 +248,13 @@ object ClinometerCalculator {
     }
   }
 
-  /**
-   * 指定されたフォーマットに応じた傾斜テキストを返す
-   */
-  fun formatDip(reading: ClinometerReading, format: NotationFormat): String {
+  fun formatDip(
+    reading: ClinometerReading,
+    format: NotationFormat,
+    language: AppLanguage = AppLanguage.JA
+  ): String {
     return when (format) {
-      NotationFormat.JAPANESE -> formatJapaneseDip(reading.dipAngle, reading.dipDirection)
+      NotationFormat.JAPANESE -> formatJapaneseDip(reading.dipAngle, reading.dipDirection, language)
       NotationFormat.RIGHT_HAND_RULE -> "%02d° %s".format(
         reading.dipAngle.roundToInt().coerceIn(0, 90),
         toCardinal8(reading.dipDirection)
@@ -256,9 +265,6 @@ object ClinometerCalculator {
     }
   }
 
-  /**
-   * 方位角 (0..360°) を8方位 ("N", "NE", "E", "SE", "S", "SW", "W", "NW") に変換する
-   */
   fun toCardinal8(azimuth: Float): String {
     val dirs = arrayOf("N", "NE", "E", "SE", "S", "SW", "W", "NW")
     val index = (((normalizeDegrees(azimuth) + 22.5f) / 45f).toInt()) % 8
@@ -266,8 +272,77 @@ object ClinometerCalculator {
   }
 
   /**
-   * 120Hz 描画向けに前回の計測値と今回の計測値をローパスフィルタで滑らかに補間する
+   * 音声読み上げ (TTS) 用のテキストを生成する (6言語対応)
    */
+  fun buildSpeechText(reading: ClinometerReading, language: AppLanguage): String {
+    val halfCircle = ((normalizeDegrees(reading.strikeAzimuth).roundToInt()) % 180 + 180) % 180
+    val dip = reading.dipAngle.roundToInt().coerceIn(0, 90)
+    val cardinal = toCardinal8(reading.dipDirection)
+
+    return when (language) {
+      AppLanguage.JA -> {
+        val strikeSpeech = when {
+          halfCircle == 0 -> "走向 南北"
+          halfCircle == 90 -> "走向 東西"
+          halfCircle < 90 -> "走向 北 ${halfCircle}度 東"
+          else -> "走向 北 ${180 - halfCircle}度 西"
+        }
+        val cardinalJa = when (cardinal) {
+          "N" -> "北"
+          "NE" -> "北東"
+          "E" -> "東"
+          "SE" -> "南東"
+          "S" -> "南"
+          "SW" -> "南西"
+          "W" -> "西"
+          "NW" -> "北西"
+          else -> cardinal
+        }
+        "$strikeSpeech、傾斜 ${dip}度 $cardinalJa"
+      }
+
+      AppLanguage.ZH_TW, AppLanguage.ZH_CN -> {
+        val strikeSpeech = when {
+          halfCircle == 0 -> "走向 南北"
+          halfCircle == 90 -> "走向 東西"
+          halfCircle < 90 -> "走向 北偏東 ${halfCircle}度"
+          else -> "走向 北偏西 ${180 - halfCircle}度"
+        }
+        "$strikeSpeech，傾角 ${dip}度 $cardinal"
+      }
+
+      AppLanguage.KO -> {
+        val strikeSpeech = when {
+          halfCircle == 0 -> "주향 남북"
+          halfCircle == 90 -> "주향 동서"
+          halfCircle < 90 -> "주향 북 ${halfCircle}도 동"
+          else -> "주향 북 ${180 - halfCircle}도 서"
+        }
+        "$strikeSpeech, 경사 ${dip}도 $cardinal"
+      }
+
+      AppLanguage.ES -> {
+        val strikeSpeech = when {
+          halfCircle == 0 -> "Rumbo Norte Sur"
+          halfCircle == 90 -> "Rumbo Este Oeste"
+          halfCircle < 90 -> "Rumbo Norte $halfCircle grados Este"
+          else -> "Rumbo Norte ${180 - halfCircle} grados Oeste"
+        }
+        "$strikeSpeech, Buzamiento $dip grados $cardinal"
+      }
+
+      AppLanguage.EN -> {
+        val strikeSpeech = when {
+          halfCircle == 0 -> "Strike North South"
+          halfCircle == 90 -> "Strike East West"
+          halfCircle < 90 -> "Strike North $halfCircle degrees East"
+          else -> "Strike North ${180 - halfCircle} degrees West"
+        }
+        "$strikeSpeech, Dip $dip degrees $cardinal"
+      }
+    }
+  }
+
   fun smoothReading(
     previous: ClinometerReading,
     current: ClinometerReading,
@@ -286,9 +361,6 @@ object ClinometerCalculator {
     )
   }
 
-  /**
-   * 0° と 360° の境界をまたいでも最短経路で補間する角度フィルタ
-   */
   fun smoothAngle(prevDeg: Float, targetDeg: Float, alpha: Float): Float {
     val prevRad = prevDeg * DEG_TO_RAD
     val targetRad = targetDeg * DEG_TO_RAD

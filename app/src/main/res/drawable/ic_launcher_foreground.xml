@@ -4,18 +4,68 @@
   android:height="108dp"
   android:viewportWidth="108"
   android:viewportHeight="108">
-  <!-- 外周のコンパスリング -->
+
+  <!-- クリノメーター盤のダークサークルベース -->
+  <path
+    android:fillColor="#111827"
+    android:pathData="M54,54m-31,0a31,31 0,1 1,62 0a31,31 0,1 1,-62 0" />
+
+  <!-- 盤面内の嘉陽層・傾斜地層断面 (アンバーブラウン #5E4200) -->
+  <path
+    android:fillColor="#5E4200"
+    android:pathData="M26,66 L80,42 A30,30 0,0 1,26 66 Z" />
+
+  <!-- 外周コンパスリング (走向シアン #38BDF8) -->
   <path
     android:fillColor="#00000000"
-    android:pathData="M54,54m-28,0a28,28 0,1 1,56 0a28,28 0,1 1,-56 0"
-    android:strokeWidth="3"
+    android:pathData="M54,54m-30,0a30,30 0,1 1,60 0a30,30 0,1 1,-60 0"
+    android:strokeWidth="3.2"
     android:strokeColor="#38BDF8" />
-  <!-- 北を指す赤い針 -->
+
+  <!-- 内周水準器ガイドリング -->
+  <path
+    android:fillColor="#00000000"
+    android:pathData="M54,54m-13,0a13,13 0,1 1,26 0a13,13 0,1 1,-26 0"
+    android:strokeWidth="1.2"
+    android:strokeColor="#475569" />
+
+  <!-- 東西南北の目盛りティック -->
+  <path
+    android:fillColor="#00000000"
+    android:pathData="M54,24 L54,29 M54,79 L54,84 M24,54 L29,54 M79,54 L84,54"
+    android:strokeWidth="2.2"
+    android:strokeColor="#94A3B8"
+    android:strokeLineCap="round" />
+
+  <!-- 最大傾斜ベクトル (Dip Vector: アンバーゴールド #FBBF24) -->
+  <path
+    android:fillColor="#00000000"
+    android:pathData="M54,54 L63,72"
+    android:strokeWidth="3.8"
+    android:strokeColor="#FBBF24"
+    android:strokeLineCap="round" />
+  <path
+    android:fillColor="#FBBF24"
+    android:pathData="M63,72m-3.2,0a3.2,3.2 0,1 1,6.4 0a3.2,3.2 0,1 1,-6.4 0" />
+
+  <!-- 走向ライン (Strike Line: スカイシアン #38BDF8) -->
+  <path
+    android:fillColor="#00000000"
+    android:pathData="M29,65.5 L79,42.5"
+    android:strokeWidth="4.0"
+    android:strokeColor="#38BDF8"
+    android:strokeLineCap="round" />
+
+  <!-- 12時方向の磁北ポインタ (赤 #EF4444) -->
   <path
     android:fillColor="#EF4444"
-    android:pathData="M54,28 L60,54 L54,50 L48,54 Z" />
-  <!-- 南を指す白い針 -->
+    android:pathData="M54,21 L59,32 L54,29.5 L49,32 Z" />
+
+  <!-- 中央の気泡水準器バブル (エメラルドグリーン #10B981) -->
   <path
-    android:fillColor="#E2E8F0"
-    android:pathData="M54,80 L60,54 L54,58 L48,54 Z" />
+    android:fillColor="#10B981"
+    android:pathData="M54,54m-4.8,0a4.8,4.8 0,1 1,9.6 0a4.8,4.8 0,1 1,-9.6 0" />
+  <path
+    android:fillColor="#FFFFFF"
+    android:pathData="M52.5,52.5m-1.4,0a1.4,1.4 0,1 1,2.8 0a1.4,1.4 0,1 1,-2.8 0" />
 </vector>

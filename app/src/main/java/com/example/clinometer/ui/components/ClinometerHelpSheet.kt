@@ -24,7 +24,6 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.HelpOutline
 import androidx.compose.material.icons.automirrored.filled.OpenInNew
 import androidx.compose.material.icons.filled.CompassCalibration
-import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.Layers
 import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material.icons.filled.Navigation
@@ -46,6 +45,7 @@ import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
@@ -59,13 +59,15 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.clinometer.ui.i18n.AppStrings
 
 /**
- * 地学クリノメーターの使い方・解説ヘルプを表示するボトムシート
+ * 地学クリノメーターの使い方・解説ヘルプを表示するボトムシート (6言語対応)
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ClinometerHelpSheet(
+  strings: AppStrings,
   onDismiss: () -> Unit,
   sheetState: SheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
 ) {
@@ -104,12 +106,12 @@ fun ClinometerHelpSheet(
         Spacer(modifier = Modifier.width(12.dp))
         Column {
           Text(
-            text = "クリノメーター 使い方ガイド",
+            text = strings.helpPageTitle,
             style = MaterialTheme.typography.titleLarge,
             fontWeight = FontWeight.Bold
           )
           Text(
-            text = "地層の走向・傾斜の測定手順と機能解説",
+            text = strings.helpPageSubtitle,
             style = MaterialTheme.typography.bodySmall,
             color = MaterialTheme.colorScheme.onSurfaceVariant
           )
@@ -120,29 +122,29 @@ fun ClinometerHelpSheet(
 
       // 1. クイックスタート
       HelpSectionCard(
-        title = "1. 基本的な測定の流れ",
+        title = strings.helpSec1Title,
         icon = Icons.Default.Navigation,
         iconTint = MaterialTheme.colorScheme.primary
       ) {
         StepItem(
           stepNumber = "1",
-          title = "測定モードを選択",
-          description = "通常は露頭の層理面にスマホ背面を当てる「面測定（背面密着）」が最も手軽で高精度です。"
+          title = strings.helpStep1Title,
+          description = strings.helpStep1Desc
         )
         StepItem(
           stepNumber = "2",
-          title = "スマホを岩盤・地層面に当てる",
-          description = "凹凸の少ない平らな面を選び、クリノコンパスの中央にある水準器の泡が安定するまで待ちます。"
+          title = strings.helpStep2Title,
+          description = strings.helpStep2Desc
         )
         StepItem(
           stepNumber = "3",
-          title = "音量キーで値をHOLD（固定）",
-          description = "狭い隙間や見上げ・オーバーハングで画面が見えなくても、音量上下キーを押すと振動とともに値が固定されます。"
+          title = strings.helpStep3Title,
+          description = strings.helpStep3Desc
         )
         StepItem(
           stepNumber = "4",
-          title = "野帳へ記録",
-          description = "「野帳へ記録」ボタンを押して露頭番号や岩相メモを入力・保存します。CSV形式で一括コピーも可能です。"
+          title = strings.helpStep4Title,
+          description = strings.helpStep4Desc
         )
       }
 
@@ -150,36 +152,36 @@ fun ClinometerHelpSheet(
 
       // 2. 測定モードの違い & 面測定のスマホの当て方図解
       HelpSectionCard(
-        title = "2. 測定モードの使い分け & スマホの当て方",
+        title = strings.helpSec2Title,
         icon = Icons.Default.Layers,
         iconTint = MaterialTheme.colorScheme.secondary
       ) {
         Text(
-          text = "■ 面測定（背面密着）[推奨]",
+          text = strings.helpSurfaceModeHeading,
           fontWeight = FontWeight.Bold,
           style = MaterialTheme.typography.bodyMedium,
           color = MaterialTheme.colorScheme.primary
         )
         Text(
-          text = "スマホの裏面を地層面に直接ペタッと密着させます。内部の3軸加速度・地磁気センサーから走向線と最大傾斜角を一度に自動計算します。",
+          text = strings.helpSurfaceModeIntro,
           style = MaterialTheme.typography.bodySmall,
           color = MaterialTheme.colorScheme.onSurfaceVariant,
           modifier = Modifier.padding(bottom = 10.dp)
         )
 
         // 走向に対するスマホの向き（縦・横・回転自由）の立体図解
-        SurfaceMeasurementDiagram()
+        SurfaceMeasurementDiagram(strings = strings)
 
         Spacer(modifier = Modifier.height(14.dp))
 
         Text(
-          text = "■ 側面測定（伝統式）",
+          text = strings.helpEdgeModeHeading,
           fontWeight = FontWeight.Bold,
           style = MaterialTheme.typography.bodyMedium,
           color = MaterialTheme.colorScheme.secondary
         )
         Text(
-          text = "金属製・プラスチック製のアナログクリノメーターと同じ手順です。長辺側面を地層面に水平に当てて走向を測り、側面を最大傾斜線に沿わせて傾斜角を読み取ります。",
+          text = strings.helpEdgeModeIntro,
           style = MaterialTheme.typography.bodySmall,
           color = MaterialTheme.colorScheme.onSurfaceVariant
         )
@@ -189,24 +191,24 @@ fun ClinometerHelpSheet(
 
       // 3. 表記形式（走向・傾斜）
       HelpSectionCard(
-        title = "3. 走向・傾斜の表記形式",
+        title = strings.helpSec3Title,
         icon = Icons.Default.CompassCalibration,
         iconTint = MaterialTheme.colorScheme.tertiary
       ) {
         NotationItem(
-          name = "日本式（四方位角表記）",
+          name = strings.helpNotation1Name,
           example = "N 30° E  45° SE",
-          explanation = "日本の地質調査で最も一般的。走向線の向きを真北から東西への偏り角度で示し、傾斜角と下がる方角（SEなど）を併記します。"
+          explanation = strings.helpNotation1Desc
         )
         NotationItem(
-          name = "右手則 (Right-Hand Rule: RHR)",
+          name = strings.helpNotation2Name,
           example = "030° / 45°",
-          explanation = "国際地質学で多用される表記。右手親指を走向方向に向けたとき、右手の指が傾斜方向（下がる方向）を向くように走向を0〜359°で1つに決定します。"
+          explanation = strings.helpNotation2Desc
         )
         NotationItem(
-          name = "Dip / Dip Direction",
+          name = strings.helpNotation3Name,
           example = "45° / 120°",
-          explanation = "傾斜角と最大傾斜方位（0〜359°）の組み合わせ。地質構造解析や3Dモデリングで重宝されます。"
+          explanation = strings.helpNotation3Desc
         )
       }
 
@@ -214,12 +216,12 @@ fun ClinometerHelpSheet(
 
       // 4. クリノメーターの豆知識：E/W逆転
       HelpSectionCard(
-        title = "4. なぜEとWが逆なのか？（クリノ盤）",
+        title = strings.helpSec4Title,
         icon = Icons.Default.SwapHoriz,
         iconTint = MaterialTheme.colorScheme.primary
       ) {
         Text(
-          text = "一般的な方位磁針とは異なり、クリノメーターは盤面の東（E）と西（W）が左右逆に刻まれています。\n\n本体先端を目標（走向方向）に向けたとき、磁針が静止した位置の目盛を直接読むだけで「N○○°E」や「N○○°W」が直読できるように設計されているためです。\n\n本アプリの「E/W 反転」ボタンで、日本式クリノ盤と標準コンパス盤をいつでも切り替えられます。",
+          text = strings.helpSec4Body,
           style = MaterialTheme.typography.bodySmall,
           color = MaterialTheme.colorScheme.onSurfaceVariant,
           lineHeight = 20.sp
@@ -230,27 +232,31 @@ fun ClinometerHelpSheet(
 
       // 5. 便利な野外機能
       HelpSectionCard(
-        title = "5. 野外調査を支える便利機能",
+        title = strings.helpSec5Title,
         icon = Icons.Default.Lock,
         iconTint = MaterialTheme.colorScheme.secondary
       ) {
         FeatureItem(
-          title = "音量キー操作 & 画面常時点灯",
-          description = "野外で手が塞がっている時でも音量キー（Up/Down）でホールド可能。測定中に画面が暗くならないよう常時点灯設定になっています。"
+          title = strings.helpFeat1Title,
+          description = strings.helpFeat1Desc
         )
         FeatureItem(
-          title = "磁気偏角補正（真北・磁北）",
-          description = "設定画面から調査地域の磁気偏角（沖縄 -5.5°、東京 -7.8°、札幌 -9.5°など）を簡単にプリセット指定できます。"
+          title = strings.helpFeat2Title,
+          description = strings.helpFeat2Desc
         )
         FeatureItem(
-          title = "シミュレーションモード",
-          description = "机上や授業、テスト時に手動スライダーで走向・傾斜を自由に変更して挙動を確認できます。"
+          title = strings.helpFeat3Title,
+          description = strings.helpFeat3Desc
+        )
+        FeatureItem(
+          title = strings.helpFeat4Title,
+          description = strings.helpFeat4Desc
         )
       }
 
       Spacer(modifier = Modifier.height(20.dp))
 
-      // 外部Webページへのリンクボタン
+      // 外部Webページへのリンクボタン (Wikipedia / 産総研 地質調査総合センター)
       Card(
         colors = CardDefaults.cardColors(
           containerColor = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.5f)
@@ -260,14 +266,14 @@ fun ClinometerHelpSheet(
       ) {
         Column(modifier = Modifier.padding(16.dp)) {
           Text(
-            text = "さらに詳しい地質調査の基礎知識",
+            text = strings.helpWebCardTitle,
             style = MaterialTheme.typography.titleSmall,
             fontWeight = FontWeight.Bold,
             color = MaterialTheme.colorScheme.onPrimaryContainer
           )
           Spacer(modifier = Modifier.height(4.dp))
           Text(
-            text = "クリノメーターの原理や走向傾斜の計測法について、Webの解説ページ（Wikipedia / 産総研 地質調査等）で確認できます。",
+            text = strings.helpWebCardDesc,
             style = MaterialTheme.typography.bodySmall,
             color = MaterialTheme.colorScheme.onSurfaceVariant
           )
@@ -280,7 +286,7 @@ fun ClinometerHelpSheet(
               onClick = {
                 val intent = Intent(
                   Intent.ACTION_VIEW,
-                  Uri.parse("https://ja.wikipedia.org/wiki/%E3%82%AF%E3%83%AA%E3%83%8E%E3%83%A1%E3%83%BC%E3%82%BF%E3%83%BC")
+                  Uri.parse(strings.helpWikiUrl)
                 )
                 context.startActivity(intent)
               },
@@ -292,14 +298,14 @@ fun ClinometerHelpSheet(
                 modifier = Modifier.size(16.dp)
               )
               Spacer(modifier = Modifier.width(6.dp))
-              Text("Wikipediaで見る", style = MaterialTheme.typography.labelSmall)
+              Text(strings.helpWikiBtn, style = MaterialTheme.typography.labelSmall)
             }
 
             OutlinedButton(
               onClick = {
                 val intent = Intent(
                   Intent.ACTION_VIEW,
-                  Uri.parse("https://www.gsj.jp/")
+                  Uri.parse(strings.helpSurveyUrl)
                 )
                 context.startActivity(intent)
               },
@@ -311,7 +317,7 @@ fun ClinometerHelpSheet(
                 modifier = Modifier.size(16.dp)
               )
               Spacer(modifier = Modifier.width(6.dp))
-              Text("産総研 地質調査総合センター", style = MaterialTheme.typography.labelSmall)
+              Text(strings.helpSurveyBtn, style = MaterialTheme.typography.labelSmall)
             }
           }
         }
@@ -323,7 +329,7 @@ fun ClinometerHelpSheet(
         onClick = onDismiss,
         modifier = Modifier.fillMaxWidth()
       ) {
-        Text("閉じる")
+        Text(strings.closeBtn)
       }
     }
   }
@@ -465,6 +471,7 @@ private fun FeatureItem(
  */
 @Composable
 private fun SurfaceMeasurementDiagram(
+  strings: AppStrings,
   modifier: Modifier = Modifier
 ) {
   val primaryColor = MaterialTheme.colorScheme.primary
@@ -488,18 +495,20 @@ private fun SurfaceMeasurementDiagram(
         modifier = Modifier.fillMaxWidth()
       ) {
         Text(
-          text = "【図解】面測定のスマホの構え方",
+          text = strings.helpDiagramTitle,
           style = MaterialTheme.typography.titleSmall,
           fontWeight = FontWeight.Bold,
-          color = primaryColor
+          color = primaryColor,
+          modifier = Modifier.weight(1f)
         )
+        Spacer(modifier = Modifier.width(6.dp))
         Surface(
           shape = RoundedCornerShape(20.dp),
           color = MaterialTheme.colorScheme.primaryContainer,
           contentColor = MaterialTheme.colorScheme.onPrimaryContainer
         ) {
           Text(
-            text = "縦・横・斜め 自由！",
+            text = strings.helpDiagramBadge,
             style = MaterialTheme.typography.labelSmall,
             fontWeight = FontWeight.Bold,
             modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
@@ -524,10 +533,10 @@ private fun SurfaceMeasurementDiagram(
 
           // 1. 傾斜した地層面 (3Dパースの平行四辺形)
           val planePath = Path().apply {
-            moveTo(w * 0.10f, h * 0.36f) // 左奥
-            lineTo(w * 0.68f, h * 0.14f) // 右奥 (高い側)
-            lineTo(w * 0.90f, h * 0.64f) // 右手前
-            lineTo(w * 0.32f, h * 0.86f) // 左手前 (低い側)
+            moveTo(w * 0.10f, h * 0.36f)
+            lineTo(w * 0.68f, h * 0.14f)
+            lineTo(w * 0.90f, h * 0.64f)
+            lineTo(w * 0.32f, h * 0.86f)
             close()
           }
           drawPath(
@@ -585,35 +594,31 @@ private fun SurfaceMeasurementDiagram(
           val phoneH = h * 0.40f
 
           rotate(degrees = -16f, pivot = Offset(phoneCenterX, phoneCenterY)) {
-            // スマホ本体外枠
             drawRoundRect(
               color = surfaceColor,
               topLeft = Offset(phoneCenterX - phoneW / 2, phoneCenterY - phoneH / 2),
               size = Size(phoneW, phoneH),
-              cornerRadius = androidx.compose.ui.geometry.CornerRadius(10.dp.toPx(), 10.dp.toPx())
+              cornerRadius = CornerRadius(10.dp.toPx(), 10.dp.toPx())
             )
             drawRoundRect(
               color = onSurfaceColor.copy(alpha = 0.85f),
               topLeft = Offset(phoneCenterX - phoneW / 2, phoneCenterY - phoneH / 2),
               size = Size(phoneW, phoneH),
-              cornerRadius = androidx.compose.ui.geometry.CornerRadius(10.dp.toPx(), 10.dp.toPx()),
+              cornerRadius = CornerRadius(10.dp.toPx(), 10.dp.toPx()),
               style = Stroke(width = 2.5.dp.toPx())
             )
-            // 画面エリア
             drawRoundRect(
               color = primaryColor.copy(alpha = 0.20f),
               topLeft = Offset(phoneCenterX - phoneW / 2 + 5f, phoneCenterY - phoneH / 2 + 8f),
               size = Size(phoneW - 10f, phoneH - 16f),
-              cornerRadius = androidx.compose.ui.geometry.CornerRadius(8.dp.toPx(), 8.dp.toPx())
+              cornerRadius = CornerRadius(8.dp.toPx(), 8.dp.toPx())
             )
-            // コンパス目盛円
             drawCircle(
               color = primaryColor.copy(alpha = 0.7f),
               radius = phoneW * 0.28f,
               center = Offset(phoneCenterX, phoneCenterY),
               style = Stroke(width = 1.5.dp.toPx())
             )
-            // 水準器の気泡
             drawCircle(
               color = secondaryColor,
               radius = 5.dp.toPx(),
@@ -662,14 +667,14 @@ private fun SurfaceMeasurementDiagram(
             horizontalArrangement = Arrangement.SpaceBetween
           ) {
             Text(
-              text = "↑ 面の法線ベクトル(Z軸)\n   から3次元的に算出",
+              text = strings.helpDiagramNormalLabel,
               style = MaterialTheme.typography.labelSmall,
               color = MaterialTheme.colorScheme.onSurface,
               fontWeight = FontWeight.SemiBold,
               lineHeight = 13.sp
             )
             Text(
-              text = "地層面 (層理面)",
+              text = strings.helpDiagramPlaneLabel,
               style = MaterialTheme.typography.labelSmall,
               color = primaryColor,
               fontWeight = FontWeight.Bold
@@ -682,13 +687,13 @@ private fun SurfaceMeasurementDiagram(
             verticalAlignment = Alignment.Bottom
           ) {
             Text(
-              text = "--- 走向線 (水平: Strike)",
+              text = strings.helpDiagramStrikeLabel,
               style = MaterialTheme.typography.labelSmall,
               color = tertiaryColor,
               fontWeight = FontWeight.Bold
             )
             Text(
-              text = "↓ 最大傾斜 (Dip) →",
+              text = strings.helpDiagramDipLabel,
               style = MaterialTheme.typography.labelSmall,
               color = secondaryColor,
               fontWeight = FontWeight.Bold
@@ -707,14 +712,14 @@ private fun SurfaceMeasurementDiagram(
         Row(verticalAlignment = Alignment.Top) {
           Text("● ", color = primaryColor, fontWeight = FontWeight.Bold, style = MaterialTheme.typography.bodySmall)
           Text(
-            text = "スマホの向き：縦・横・斜め、どの向きでも同じ値が出ます",
+            text = strings.helpDiagramPoint1Title,
             style = MaterialTheme.typography.bodySmall,
             fontWeight = FontWeight.Bold,
             color = MaterialTheme.colorScheme.onSurface
           )
         }
         Text(
-          text = "アプリはスマホ背面の「3次元法線ベクトル」から直接走向と傾斜を幾何計算するため、地層面上でのスマホの回転角（縦・横・斜め）に影響されません。",
+          text = strings.helpDiagramPoint1Desc,
           style = MaterialTheme.typography.bodySmall,
           color = MaterialTheme.colorScheme.onSurfaceVariant,
           modifier = Modifier.padding(start = 14.dp)
@@ -723,14 +728,14 @@ private fun SurfaceMeasurementDiagram(
         Row(verticalAlignment = Alignment.Top) {
           Text("● ", color = secondaryColor, fontWeight = FontWeight.Bold, style = MaterialTheme.typography.bodySmall)
           Text(
-            text = "最も大切なこと：背面全体を「隙間なくペタッと密着」させること",
+            text = strings.helpDiagramPoint2Title,
             style = MaterialTheme.typography.bodySmall,
             fontWeight = FontWeight.Bold,
             color = MaterialTheme.colorScheme.onSurface
           )
         }
         Text(
-          text = "スマホが地層面から浮いていると誤差の原因になります。カメラレンズの突起やケースの凹凸が露頭の隙間に挟まって浮かないよう、背面の平らな面をしっかり密着させてください。凹凸が激しい岩盤では下敷きやノートを挟むと安定します。",
+          text = strings.helpDiagramPoint2Desc,
           style = MaterialTheme.typography.bodySmall,
           color = MaterialTheme.colorScheme.onSurfaceVariant,
           modifier = Modifier.padding(start = 14.dp)
@@ -739,14 +744,14 @@ private fun SurfaceMeasurementDiagram(
         Row(verticalAlignment = Alignment.Top) {
           Text("● ", color = tertiaryColor, fontWeight = FontWeight.Bold, style = MaterialTheme.typography.bodySmall)
           Text(
-            text = "構え方のコツ：自分が画面を見やすい角度でOK",
+            text = strings.helpDiagramPoint3Title,
             style = MaterialTheme.typography.bodySmall,
             fontWeight = FontWeight.Bold,
             color = MaterialTheme.colorScheme.onSurface
           )
         }
         Text(
-          text = "手で持ちやすく、水準器やコンパスが見やすい向き（通常はスマホ上部を上側に向ける等）で当ててください。見上げやオーバーハング面で画面が見えない場合は、音量キーを押して測定値をHOLD（固定）してから手元で確認できます。",
+          text = strings.helpDiagramPoint3Desc,
           style = MaterialTheme.typography.bodySmall,
           color = MaterialTheme.colorScheme.onSurfaceVariant,
           modifier = Modifier.padding(start = 14.dp)

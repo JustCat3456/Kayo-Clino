@@ -1,4 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
-<resources>
-  <style name="Theme.Clinometer" parent="android:Theme.Material.NoActionBar" />
+<resources xmlns:tools="http://schemas.android.com/tools">
+  <style name="Theme.Clinometer" parent="android:Theme.Material.NoActionBar">
+    <!-- HyperOS/MIUI 等のシステム側強制ダーク変換による変色を防止し design.md の規定色を維持 -->
+    <item name="android:forceDarkAllowed" tools:targetApi="q">false</item>
+  </style>
 </resources>

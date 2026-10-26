@@ -1,0 +1,576 @@
+package com.example.clinometer.ui.components
+
+import androidx.compose.foundation.Canvas
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.FlowRow
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.pager.HorizontalPager
+import androidx.compose.foundation.pager.rememberPagerState
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.VolumeUp
+import androidx.compose.material.icons.filled.Explore
+import androidx.compose.material.icons.filled.GpsFixed
+import androidx.compose.material.icons.filled.Language
+import androidx.compose.material3.AssistChip
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.FilledTonalButton
+import androidx.compose.material3.FilterChip
+import androidx.compose.material3.FilterChipDefaults
+import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
+import androidx.compose.material3.Switch
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.geometry.CornerRadius
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Size
+import androidx.compose.ui.graphics.StrokeCap
+import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.graphics.drawscope.rotate
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.window.Dialog
+import androidx.compose.ui.window.DialogProperties
+import com.example.clinometer.model.AppLanguage
+import com.example.clinometer.ui.i18n.AppStrings
+import com.example.clinometer.ui.theme.CompassNorthRed
+import kotlinx.coroutines.launch
+
+/**
+ * 初回起動時およびヘルプボタン押下時に表示する4ステップのオンボーディング・カルーセル
+ */
+@Composable
+fun OnboardingCarouselDialog(
+  strings: AppStrings,
+  language: AppLanguage,
+  declinationDeg: Float,
+  reverseEastWest: Boolean,
+  voiceReadoutEnabled: Boolean,
+  isGpsLoading: Boolean,
+  onSelectLanguage: (AppLanguage) -> Unit,
+  onUpdateDeclination: (Float) -> Unit,
+  onRequestGpsDeclination: () -> Unit,
+  onToggleReverseEastWest: () -> Unit,
+  onToggleVoiceReadout: (Boolean) -> Unit,
+  onFinish: () -> Unit
+) {
+  val pagerState = rememberPagerState(pageCount = { 4 })
+  val coroutineScope = rememberCoroutineScope()
+
+  Dialog(
+    onDismissRequest = onFinish,
+    properties = DialogProperties(usePlatformDefaultWidth = false)
+  ) {
+    Card(
+      modifier = Modifier
+        .fillMaxWidth(0.92f)
+        .padding(vertical = 16.dp),
+      shape = RoundedCornerShape(28.dp),
+      colors = CardDefaults.cardColors(
+        containerColor = MaterialTheme.colorScheme.surface
+      ),
+      elevation = CardDefaults.cardElevation(defaultElevation = 8.dp)
+    ) {
+      Column(
+        modifier = Modifier
+          .fillMaxWidth()
+          .padding(20.dp),
+        horizontalAlignment = Alignment.CenterHorizontally
+      ) {
+        // 上部スキップバー
+        Row(
+          modifier = Modifier.fillMaxWidth(),
+          horizontalArrangement = Arrangement.SpaceBetween,
+          verticalAlignment = Alignment.CenterVertically
+        ) {
+          Text(
+            text = "${pagerState.currentPage + 1} / 4",
+            style = MaterialTheme.typography.labelMedium,
+            color = MaterialTheme.colorScheme.primary,
+            fontWeight = FontWeight.Bold
+          )
+          TextButton(onClick = onFinish) {
+            Text(strings.skipBtn)
+          }
+        }
+
+        // カルーセル本体
+        HorizontalPager(
+          state = pagerState,
+          modifier = Modifier.fillMaxWidth()
+        ) { page ->
+          Column(
+            modifier = Modifier
+              .fillMaxWidth()
+              .padding(horizontal = 4.dp, vertical = 8.dp),
+            horizontalAlignment = Alignment.CenterHorizontally
+          ) {
+            // ステップごとのカスタム図解イラスト
+            OnboardingIllustration(
+              page = page,
+              modifier = Modifier
+                .size(140.dp)
+                .padding(bottom = 12.dp)
+            )
+
+            when (page) {
+              0 -> OnboardingPage1Language(
+                strings = strings,
+                language = language,
+                onSelectLanguage = onSelectLanguage
+              )
+
+              1 -> OnboardingPageTextOnly(
+                title = strings.onboardingStep2Title,
+                body = strings.onboardingStep2Body
+              )
+
+              2 -> OnboardingPage3Features(
+                strings = strings,
+                voiceReadoutEnabled = voiceReadoutEnabled,
+                onToggleVoiceReadout = onToggleVoiceReadout
+              )
+
+              3 -> OnboardingPage4Setup(
+                strings = strings,
+                declinationDeg = declinationDeg,
+                reverseEastWest = reverseEastWest,
+                isGpsLoading = isGpsLoading,
+                onUpdateDeclination = onUpdateDeclination,
+                onRequestGpsDeclination = onRequestGpsDeclination,
+                onToggleReverseEastWest = onToggleReverseEastWest
+              )
+            }
+          }
+        }
+
+        Spacer(modifier = Modifier.height(14.dp))
+
+        // ページインジケータードット
+        Row(
+          horizontalArrangement = Arrangement.spacedBy(8.dp),
+          verticalAlignment = Alignment.CenterVertically
+        ) {
+          repeat(4) { index ->
+            val selected = pagerState.currentPage == index
+            Box(
+              modifier = Modifier
+                .height(8.dp)
+                .width(if (selected) 24.dp else 8.dp)
+                .clip(CircleShape)
+                .background(
+                  if (selected) {
+                    MaterialTheme.colorScheme.primary
+                  } else {
+                    MaterialTheme.colorScheme.surfaceVariant
+                  }
+                )
+            )
+          }
+        }
+
+        Spacer(modifier = Modifier.height(18.dp))
+
+        // 下部ナビゲーションボタン
+        Row(
+          modifier = Modifier.fillMaxWidth(),
+          horizontalArrangement = Arrangement.SpaceBetween,
+          verticalAlignment = Alignment.CenterVertically
+        ) {
+          if (pagerState.currentPage > 0) {
+            TextButton(
+              onClick = {
+                coroutineScope.launch {
+                  pagerState.animateScrollToPage(pagerState.currentPage - 1)
+                }
+              }
+            ) {
+              Text(strings.backBtn)
+            }
+          } else {
+            Spacer(modifier = Modifier.width(64.dp))
+          }
+
+          Button(
+            onClick = {
+              if (pagerState.currentPage < 3) {
+                coroutineScope.launch {
+                  pagerState.animateScrollToPage(pagerState.currentPage + 1)
+                }
+              } else {
+                onFinish()
+              }
+            },
+            shape = RoundedCornerShape(14.dp)
+          ) {
+            Text(
+              text = if (pagerState.currentPage < 3) strings.nextBtn else strings.startBtn,
+              fontWeight = FontWeight.Bold
+            )
+          }
+        }
+      }
+    }
+  }
+}
+
+@Composable
+private fun OnboardingIllustration(page: Int, modifier: Modifier = Modifier) {
+  val primary = MaterialTheme.colorScheme.primary
+  val secondary = MaterialTheme.colorScheme.secondary
+  val tertiary = MaterialTheme.colorScheme.tertiary
+  val surfaceVariant = MaterialTheme.colorScheme.surfaceVariant
+
+  Surface(
+    modifier = modifier,
+    shape = CircleShape,
+    color = surfaceVariant.copy(alpha = 0.55f)
+  ) {
+    Canvas(modifier = Modifier.padding(20.dp)) {
+      val cx = size.width / 2f
+      val cy = size.height / 2f
+      val r = size.minDimension / 2f
+
+      when (page) {
+        0 -> {
+          // コンパス＆走向傾斜記号イラスト
+          drawCircle(color = primary, radius = r, style = Stroke(width = 6f))
+          drawLine(
+            color = primary,
+            start = Offset(cx - r * 0.7f, cy + r * 0.4f),
+            end = Offset(cx + r * 0.7f, cy - r * 0.4f),
+            strokeWidth = 8f,
+            cap = StrokeCap.Round
+          )
+          drawLine(
+            color = secondary,
+            start = Offset(cx, cy),
+            end = Offset(cx + r * 0.35f, cy + r * 0.55f),
+            strokeWidth = 8f,
+            cap = StrokeCap.Round
+          )
+          drawCircle(color = CompassNorthRed, radius = 10f, center = Offset(cx, cy - r + 10f))
+        }
+
+        1 -> {
+          // 地層斜面とスマホ背面密着のイラスト
+          drawLine(
+            color = secondary,
+            start = Offset(cx - r * 0.85f, cy + r * 0.55f),
+            end = Offset(cx + r * 0.85f, cy - r * 0.35f),
+            strokeWidth = 10f,
+            cap = StrokeCap.Round
+          )
+          rotate(degrees = -28f, pivot = Offset(cx, cy)) {
+            drawRoundRect(
+              color = primary,
+              topLeft = Offset(cx - r * 0.5f, cy - 22f),
+              size = Size(r * 1.0f, 18f),
+              cornerRadius = CornerRadius(6f, 6f)
+            )
+          }
+        }
+
+        2 -> {
+          // スマホ側面の音量キーとHOLDロック波紋のイラスト
+          drawRoundRect(
+            color = primary,
+            topLeft = Offset(cx - r * 0.42f, cy - r * 0.75f),
+            size = Size(r * 0.84f, r * 1.5f),
+            cornerRadius = CornerRadius(16f, 16f),
+            style = Stroke(width = 6f)
+          )
+          // 音量キー強調
+          drawRoundRect(
+            color = secondary,
+            topLeft = Offset(cx + r * 0.44f, cy - r * 0.35f),
+            size = Size(10f, r * 0.45f),
+            cornerRadius = CornerRadius(4f, 4f)
+          )
+          drawCircle(color = tertiary, radius = r * 0.22f, center = Offset(cx, cy))
+        }
+
+        else -> {
+          // 地球磁場と偏角補正のイラスト
+          drawCircle(color = primary, radius = r * 0.85f, style = Stroke(width = 5f))
+          drawLine(
+            color = CompassNorthRed,
+            start = Offset(cx, cy + r * 0.6f),
+            end = Offset(cx - r * 0.2f, cy - r * 0.65f),
+            strokeWidth = 7f,
+            cap = StrokeCap.Round
+          )
+          drawLine(
+            color = tertiary,
+            start = Offset(cx, cy + r * 0.6f),
+            end = Offset(cx, cy - r * 0.7f),
+            strokeWidth = 5f,
+            cap = StrokeCap.Round
+          )
+        }
+      }
+    }
+  }
+}
+
+@OptIn(ExperimentalLayoutApi::class)
+@Composable
+private fun OnboardingPage1Language(
+  strings: AppStrings,
+  language: AppLanguage,
+  onSelectLanguage: (AppLanguage) -> Unit
+) {
+  Text(
+    text = strings.onboardingStep1Title,
+    style = MaterialTheme.typography.titleLarge,
+    fontWeight = FontWeight.Bold,
+    textAlign = TextAlign.Center
+  )
+  Spacer(modifier = Modifier.height(10.dp))
+  Text(
+    text = strings.onboardingStep1Body,
+    style = MaterialTheme.typography.bodyMedium,
+    color = MaterialTheme.colorScheme.onSurfaceVariant,
+    textAlign = TextAlign.Center
+  )
+  Spacer(modifier = Modifier.height(14.dp))
+
+  Row(
+    verticalAlignment = Alignment.CenterVertically,
+    horizontalArrangement = Arrangement.spacedBy(6.dp)
+  ) {
+    Icon(
+      imageVector = Icons.Default.Language,
+      contentDescription = null,
+      tint = MaterialTheme.colorScheme.primary
+    )
+    Text(
+      text = strings.languageSectionTitle,
+      style = MaterialTheme.typography.labelMedium,
+      color = MaterialTheme.colorScheme.primary,
+      fontWeight = FontWeight.Bold
+    )
+  }
+  Spacer(modifier = Modifier.height(6.dp))
+
+  FlowRow(
+    horizontalArrangement = Arrangement.spacedBy(8.dp, Alignment.CenterHorizontally),
+    verticalArrangement = Arrangement.spacedBy(4.dp),
+    modifier = Modifier.fillMaxWidth()
+  ) {
+    AppLanguage.entries.forEach { lang ->
+      FilterChip(
+        selected = language == lang,
+        onClick = { onSelectLanguage(lang) },
+        colors = FilterChipDefaults.filterChipColors(
+          selectedContainerColor = MaterialTheme.colorScheme.secondaryContainer,
+          selectedLabelColor = MaterialTheme.colorScheme.onSecondaryContainer
+        ),
+        label = {
+          Text(
+            text = lang.nativeName,
+            style = MaterialTheme.typography.labelMedium,
+            fontWeight = if (language == lang) FontWeight.Bold else FontWeight.Normal
+          )
+        }
+      )
+    }
+  }
+}
+
+@Composable
+private fun OnboardingPageTextOnly(
+  title: String,
+  body: String
+) {
+  Text(
+    text = title,
+    style = MaterialTheme.typography.titleLarge,
+    fontWeight = FontWeight.Bold,
+    textAlign = TextAlign.Center
+  )
+  Spacer(modifier = Modifier.height(10.dp))
+  Text(
+    text = body,
+    style = MaterialTheme.typography.bodyMedium,
+    color = MaterialTheme.colorScheme.onSurfaceVariant,
+    textAlign = TextAlign.Start
+  )
+}
+
+@Composable
+private fun OnboardingPage3Features(
+  strings: AppStrings,
+  voiceReadoutEnabled: Boolean,
+  onToggleVoiceReadout: (Boolean) -> Unit
+) {
+  Text(
+    text = strings.onboardingStep3Title,
+    style = MaterialTheme.typography.titleLarge,
+    fontWeight = FontWeight.Bold,
+    textAlign = TextAlign.Center
+  )
+  Spacer(modifier = Modifier.height(10.dp))
+  Text(
+    text = strings.onboardingStep3Body,
+    style = MaterialTheme.typography.bodyMedium,
+    color = MaterialTheme.colorScheme.onSurfaceVariant,
+    textAlign = TextAlign.Center
+  )
+  Spacer(modifier = Modifier.height(14.dp))
+
+  Surface(
+    shape = RoundedCornerShape(14.dp),
+    color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f),
+    modifier = Modifier.fillMaxWidth()
+  ) {
+    Row(
+      modifier = Modifier.padding(horizontal = 14.dp, vertical = 10.dp),
+      horizontalArrangement = Arrangement.SpaceBetween,
+      verticalAlignment = Alignment.CenterVertically
+    ) {
+      Row(
+        verticalAlignment = Alignment.CenterVertically,
+        modifier = Modifier.weight(1f)
+      ) {
+        Icon(
+          imageVector = Icons.AutoMirrored.Filled.VolumeUp,
+          contentDescription = null,
+          tint = MaterialTheme.colorScheme.primary
+        )
+        Spacer(modifier = Modifier.width(10.dp))
+        Text(
+          text = strings.voiceReadoutTitle,
+          style = MaterialTheme.typography.bodyMedium,
+          fontWeight = FontWeight.SemiBold
+        )
+      }
+      Switch(
+        checked = voiceReadoutEnabled,
+        onCheckedChange = onToggleVoiceReadout
+      )
+    }
+  }
+}
+
+@Composable
+private fun OnboardingPage4Setup(
+  strings: AppStrings,
+  declinationDeg: Float,
+  reverseEastWest: Boolean,
+  isGpsLoading: Boolean,
+  onUpdateDeclination: (Float) -> Unit,
+  onRequestGpsDeclination: () -> Unit,
+  onToggleReverseEastWest: () -> Unit
+) {
+  Text(
+    text = strings.onboardingStep4Title,
+    style = MaterialTheme.typography.titleLarge,
+    fontWeight = FontWeight.Bold,
+    textAlign = TextAlign.Center
+  )
+  Spacer(modifier = Modifier.height(6.dp))
+  Text(
+    text = strings.onboardingStep4Body,
+    style = MaterialTheme.typography.bodySmall,
+    color = MaterialTheme.colorScheme.onSurfaceVariant,
+    textAlign = TextAlign.Center
+  )
+  Spacer(modifier = Modifier.height(12.dp))
+
+  FilledTonalButton(
+    onClick = onRequestGpsDeclination,
+    enabled = !isGpsLoading,
+    colors = ButtonDefaults.filledTonalButtonColors(
+      containerColor = MaterialTheme.colorScheme.secondaryContainer,
+      contentColor = MaterialTheme.colorScheme.onSecondaryContainer
+    ),
+    modifier = Modifier.fillMaxWidth()
+  ) {
+    Icon(imageVector = Icons.Default.GpsFixed, contentDescription = null)
+    Spacer(modifier = Modifier.width(8.dp))
+    Text(if (isGpsLoading) strings.gpsCalculating else strings.gpsAutoDeclinationBtn)
+  }
+
+  Spacer(modifier = Modifier.height(6.dp))
+  Text(
+    text = strings.declinationSectionTitle(declinationDeg),
+    style = MaterialTheme.typography.labelMedium,
+    color = MaterialTheme.colorScheme.primary,
+    fontWeight = FontWeight.Bold
+  )
+
+  Row(
+    horizontalArrangement = Arrangement.spacedBy(6.dp),
+    modifier = Modifier.padding(vertical = 4.dp)
+  ) {
+    val presets = listOf(
+      "Okinawa -5.5°" to -5.5f,
+      "Tokyo -7.8°" to -7.8f,
+      "Sapporo -9.5°" to -9.5f,
+      "0°" to 0f
+    )
+    presets.forEach { (label, value) ->
+      AssistChip(
+        onClick = { onUpdateDeclination(value) },
+        label = { Text(label, style = MaterialTheme.typography.labelSmall) }
+      )
+    }
+  }
+
+  Spacer(modifier = Modifier.height(6.dp))
+  Surface(
+    shape = RoundedCornerShape(14.dp),
+    color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f),
+    modifier = Modifier.fillMaxWidth()
+  ) {
+    Row(
+      modifier = Modifier.padding(horizontal = 14.dp, vertical = 8.dp),
+      horizontalArrangement = Arrangement.SpaceBetween,
+      verticalAlignment = Alignment.CenterVertically
+    ) {
+      Row(
+        verticalAlignment = Alignment.CenterVertically,
+        modifier = Modifier.weight(1f)
+      ) {
+        Icon(
+          imageVector = Icons.Default.Explore,
+          contentDescription = null,
+          tint = MaterialTheme.colorScheme.primary
+        )
+        Spacer(modifier = Modifier.width(10.dp))
+        Text(
+          text = strings.reverseEwTitle,
+          style = MaterialTheme.typography.bodySmall,
+          fontWeight = FontWeight.SemiBold
+        )
+      }
+      Switch(
+        checked = reverseEastWest,
+        onCheckedChange = { onToggleReverseEastWest() }
+      )
+    }
+  }
+}

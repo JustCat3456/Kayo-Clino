@@ -117,6 +117,7 @@ fun ClinometerDial(
           center = center,
           outerRadius = outerRadius,
           innerCompassRadius = innerCompassRadius,
+          compassRotation = compassRotation,
           reverseEastWest = reverseEastWest,
           onSurfaceColor = onSurfaceColor,
           onSurfaceVariantColor = onSurfaceVariantColor,
@@ -196,6 +197,7 @@ private fun DrawScope.drawCompassScale(
   center: Offset,
   outerRadius: Float,
   innerCompassRadius: Float,
+  compassRotation: Float,
   reverseEastWest: Boolean,
   onSurfaceColor: Color,
   onSurfaceVariantColor: Color,
@@ -245,24 +247,29 @@ private fun DrawScope.drawCompassScale(
       cap = StrokeCap.Round
     )
 
-    // 30度ごとの角度ラベル (クリノメーター式90度象限目盛り or 360度目盛り)
+    // 30度ごとの角度ラベル (端末を回転させても文字が逆さまにならないよう正立描画)
     if (isMajor && !isCardinal) {
-      val textR = outerRadius * 0.84f
+      val textR = outerRadius * 0.83f
       val tx = center.x + cosA * textR
-      val ty = center.y + sinA * textR + degreePaint.textSize * 0.35f
+      val ty = center.y + sinA * textR
       val label = if (reverseEastWest) {
-        // 日本式クリノメーター象限角 (N/S を 0°、E/W を 90° とする直読目盛り)
         val quad = if (deg % 180 <= 90) deg % 180 else 180 - (deg % 180)
         "$quad"
       } else {
         "$deg"
       }
-      drawContext.canvas.nativeCanvas.drawText(label, tx, ty, degreePaint)
+      rotate(degrees = -compassRotation, pivot = Offset(tx, ty)) {
+        drawContext.canvas.nativeCanvas.drawText(
+          label,
+          tx,
+          ty + degreePaint.textSize * 0.35f,
+          degreePaint
+        )
+      }
     }
   }
 
-  // N / E / S / W の方位文字
-  // reverseEastWest = true の場合は伝統的なクリノコンパス同様に E と W を反転表示
+  // N / E / S / W の方位文字 (常に正立して読めるように逆回転を適用)
   val eastLabel = if (reverseEastWest) "W" else "E"
   val westLabel = if (reverseEastWest) "E" else "W"
   val cardinals = listOf(
@@ -272,13 +279,20 @@ private fun DrawScope.drawCompassScale(
     270 to westLabel
   )
 
-  val cardinalR = innerCompassRadius * 0.96f
+  val cardinalR = innerCompassRadius * 0.94f
   for ((deg, label) in cardinals) {
     val angleRad = Math.toRadians((deg - 90).toDouble())
     val tx = center.x + cos(angleRad).toFloat() * cardinalR
+    val ty = center.y + sin(angleRad).toFloat() * cardinalR
     val paint = if (deg == 0) northPaint else cardinalPaint
-    val ty = center.y + sin(angleRad).toFloat() * cardinalR + paint.textSize * 0.36f
-    drawContext.canvas.nativeCanvas.drawText(label, tx, ty, paint)
+    rotate(degrees = -compassRotation, pivot = Offset(tx, ty)) {
+      drawContext.canvas.nativeCanvas.drawText(
+        label,
+        tx,
+        ty + paint.textSize * 0.36f,
+        paint
+      )
+    }
   }
 
   // 北 (0°) の赤い三角ポインタ

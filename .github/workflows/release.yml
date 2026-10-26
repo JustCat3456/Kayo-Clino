@@ -33,23 +33,23 @@ jobs:
 
       - name: Rename APK for Release
         run: |
-          cp app/build/outputs/apk/release/app-release.apk clinometer-app-${{ github.ref_name }}.apk
+          cp app/build/outputs/apk/release/app-release.apk kayo-clino-${{ github.ref_name }}.apk
 
       - name: Create GitHub Release & Upload APK
         uses: softprops/action-gh-release@v2
         with:
-          files: clinometer-app-${{ github.ref_name }}.apk
-          name: Release ${{ github.ref_name }}
+          files: kayo-clino-${{ github.ref_name }}.apk
+          name: Kayo-Clino ${{ github.ref_name }}
           draft: false
           prerelease: false
           generate_release_notes: true
           body: |
-            ### 地学クリノメーター ${{ github.ref_name }}
+            ### 🌺 Kayo-Clino（地学クリノメーター） ${{ github.ref_name }}
             
             Android端末向けの地学クリノメーター公式リリースです。
             
             #### インストール方法
-            1. 下記の Assets から `clinometer-app-${{ github.ref_name }}.apk` をAndroid端末にダウンロードしてください。
+            1. 下記の Assets から `kayo-clino-${{ github.ref_name }}.apk` をAndroid端末にダウンロードしてください。
             2. ダウンロード完了後、APKファイルを開いてインストールしてください（「不明なアプリのインストール」の許可が必要です）。
             
             #### 主な機能
