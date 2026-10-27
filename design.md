@@ -183,3 +183,5 @@
   [`ClinometerDial.kt`](app/src/main/java/com/example/clinometer/ui/components/ClinometerDial.kt) の `drawCompassScale` および `drawStrikeAndDipSymbol` 内の係数を調整してください。
 - **文言や翻訳（多言語 i18n）を変更・追加したい場合**:
   [`app/src/main/assets/i18n/`](app/src/main/assets/i18n/) 配下の各言語 JSON ファイル（`ja.json`, `en.json`, `zh-TW.json`, `zh-CN.json`, `ko.json`, `es.json`）を編集してください。新言語を追加する場合は JSON ファイルを作成し、[`ClinometerData.kt`](app/src/main/java/com/example/clinometer/model/ClinometerData.kt) の `AppLanguage` に 1 行追加します。
+- **バージョン番号（リリース）を更新する場合**:
+  [`app/build.gradle.kts`](app/build.gradle.kts) の `versionName`（`1.X.Y`）について、**メジャーアップデート（機能追加・UI刷新）では2桁目（`X`）**、**マイナーアップデート（バグ修正・軽微な調整）では1桁目（`Y`）** を変更し、`versionCode` を `+1` インクリメントしてください。

@@ -12,6 +12,8 @@ android {
     applicationId = "io.github.justcat3456.kayoclino"
     minSdk = 26
     targetSdk = 35
+    // 更新方針: リリースごとに versionCode を +1 し、versionName (1.X.Y) は
+    // メジャーアップデート（機能追加・UI刷新）で2桁目(X)、マイナーアップデート（バグ修正等）で1桁目(Y)を更新する
     versionCode = 3
     versionName = "1.2.0"
 
