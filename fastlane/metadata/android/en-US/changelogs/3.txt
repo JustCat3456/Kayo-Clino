@@ -1,0 +1,5 @@
+• Applied the new Kayo-Clino adaptive icon inspired by the Kayo Formation
+• Added Color Mode switching (Light / Dark / Auto)
+• Redesigned Onboarding Carousel with unified card dimensions and streamlined steps
+• Added collapsible Debug submenu to keep Settings compact
+• Updated package ID to io.github.justcat3456.kayoclino and added F-Droid / IzzyOnDroid metadata

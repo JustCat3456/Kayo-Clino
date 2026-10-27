@@ -1,0 +1,29 @@
+Kayo-Clino is an open-source Material 3 geological compass-clinometer for Android, named after the Eocene turbidite and chevron-fold outcrops of the Kayo Formation (a National Natural Monument of Japan) in Nago, Okinawa.
+
+Designed for structural geology fieldwork, geological mapping, and earth science education, Kayo-Clino focuses on fast, single-handed operation at the outcrop without cluttered menus or multi-tab navigation.
+
+Key Features:
+
+• Dual Measurement Modes:
+  - Planar Mode (Back Flat): Place the back of the phone directly against a bedding or fault plane to simultaneously measure Strike, Dip angle, and Dip Direction from the 3D surface normal vector (supports overhanging beds).
+  - Classic Edge Mode: Align the long side edge of the device against the rock surface like a traditional analog clinometer.
+
+• Japanese Clinometer Dial (E/W Swapped) & 3 Notation Formats:
+  - Switch between a traditional geological clinometer bezel (East and West swapped for direct quadrant reading) and a standard compass bezel.
+  - Real-time switching between Quadrant notation (e.g., N 35° E / 42° SE), Right-Hand Rule (RHR: 035° / 42° SE), and Dip/Dip-Direction (125° / 42°).
+
+• Volume Key HOLD & Accessibility Voice Readout (TTS):
+  - Lock and unlock measurements one-handed using the physical Volume Up/Down keys with distinct haptic vibration patterns.
+  - Optional Text-To-Speech (TTS) readout announces Strike and Dip aloud upon locking, ideal when the screen cannot be seen under overhangs or in tight crevices.
+
+• GPS Auto-Declination (World Magnetic Model WMM):
+  - Automatically computes local magnetic declination relative to True North from GPS coordinates and altitude completely offline using Android's built-in WMM geomagnetic model.
+
+• Camera Bump Zero-Level Calibration:
+  - Place your device on a flat surface and calibrate to 0° with one tap to cancel out tilt caused by rear camera bumps.
+
+• Digital Field Note & CSV Export:
+  - Save measurements locally with outcrop IDs, lithology notes, timestamps, and GPS coordinates, and copy them to the clipboard as CSV for QGIS or spreadsheet analysis.
+
+• Multilingual & High-Contrast Themes:
+  - Supports 6 languages (Japanese, English, Traditional Chinese, Simplified Chinese, Korean, and Spanish) and Light / Dark / Auto color modes.
