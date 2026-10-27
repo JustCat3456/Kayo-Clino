@@ -107,13 +107,19 @@
 
 `Sensor.TYPE_ROTATION_VECTOR` から取得した 3×3 回転行列 $R$（デバイス座標系 $\to$ ワールド座標系 $X=\text{East}, Y=\text{North}, Z=\text{Up}$）に対し、カメラ出っ張りオフセット回転補正を適用した単位法線ベクトル $\vec{n} = (n_x, n_y, n_z)$（上向き正規化 $n_z \ge 0$）から各値を算出しています。
 
-$$\text{Dip} = \arccos(n_z) \times \frac{180}{\pi} \in [0^\circ, 90^\circ]$$
+$$
+\text{Dip} = \arccos(n_z) \times \frac{180}{\pi} \in [0^\circ, 90^\circ]
+$$
 
-$$\text{DipDirection} = \left(\operatorname{atan2}(n_x, n_y) \times \frac{180}{\pi} + \delta_{\text{declination}} + 360^\circ\right) \bmod 360^\circ$$
+$$
+\text{DipDirection} = \left(\mathrm{atan2}(n_x, n_y) \times \frac{180}{\pi} + \delta_{\text{declination}} + 360^\circ\right) \bmod 360^\circ
+$$
 
-$$\text{Strike}_{\text{RHR}} = (\text{DipDirection} - 90^\circ + 360^\circ) \bmod 360^\circ$$
+$$
+\text{Strike}_{\text{RHR}} = (\text{DipDirection} - 90^\circ + 360^\circ) \bmod 360^\circ
+$$
 
-さらに高リフレッシュレート（120Hz 等）のディスプレイでも針や気泡が滑らかに追従するよう、$0^\circ / 360^\circ$ 境界をまたいでも最短弧で補間する三角関数ローパスフィルタ（Circular Low-Pass Filter）を適用しています。
+さらに高リフレッシュレート（120Hz 等）のディスプレイでも針や気泡が滑らかに追従するよう、0° / 360° 境界をまたいでも最短弧で補間する三角関数ローパスフィルタ（Circular Low-Pass Filter）を適用しています。
 
 ---
 
