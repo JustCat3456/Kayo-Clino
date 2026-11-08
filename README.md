@@ -19,6 +19,10 @@
     <img src="docs/badges/get-it-on-github.svg" height="54" alt="Get it on GitHub" />
   </a>
   &nbsp;
+  <a href="https://fdroid.link/#https://fdoroid.haruki-saito.dev/fdroid/repo?fingerprint=139D2F90BC30EF1627AB0332FBB64A00814DBB2160BE5105A7A58AAB2142519A">
+    <img src="docs/badges/get-it-on-fdroid.svg" height="54" alt="Download from F-Droid" />
+  </a>
+  &nbsp;
   <a href="https://apps.obtainium.imranr.dev/redirect?r=obtainium://add/https://github.com/JustCat3456/Kayo-Clino">
     <img src="docs/badges/get-it-on-obtainium.svg" height="54" alt="Download from Obtainium" />
   </a>
@@ -29,8 +33,15 @@
 </p>
 
 - **GitHub Releases**: [最新リリースページ](https://github.com/JustCat3456/Kayo-Clino/releases/latest) から署名済み APK（`kayo-clino-v1.x.x.apk`）を直接ダウンロードしてインストールできます。
+- **F-Droid**: 専用リポジトリからインストール・自動更新が可能です。Android 端末で上の **Download from F-Droid** バッジをタップするか、下記の QR コードを F-Droid アプリからスキャンしてリポジトリを追加してください。
 - **Obtainium**: 端末に [Obtainium](https://github.com/ImranR98/Obtainium) が入っている場合、上の **Download from Obtainium** バッジをタップするだけで自動更新対象としてワンタップ登録できます。
 - **Komi Store**: OSS アプリストア [Komi Store](https://www.komistore.app) 内で `JustCat3456/Kayo-Clino` を検索してインストール・自動更新できます。
+
+### 📱 F-Droid リポジトリの追加方法
+
+| QR コードスキャンで追加 | ワンタップ / 手動登録手順 |
+| :---: | :--- |
+| <a href="https://fdroid.link/#https://fdoroid.haruki-saito.dev/fdroid/repo?fingerprint=139D2F90BC30EF1627AB0332FBB64A00814DBB2160BE5105A7A58AAB2142519A"><img src="docs/badges/fdroid-repo-qr.png" width="160" alt="F-Droid Repository QR Code" /></a><br><sub>（スキャンまたはタップして追加）</sub> | **1. ワンタップ追加（Android 端末）**<br>Android 端末から [F-Droid リポジトリ追加リンク](https://fdroid.link/#https://fdoroid.haruki-saito.dev/fdroid/repo?fingerprint=139D2F90BC30EF1627AB0332FBB64A00814DBB2160BE5105A7A58AAB2142519A) または上記の **Download from F-Droid** バッジをタップすると、F-Droid アプリが起動して自動登録画面が開きます。<br><br>**2. QR コード読み取り**<br>F-Droid アプリを開き、「設定」→「リポジトリ」→「＋」からカメラで左の QR コードを読み取ります。<br><br>**3. 手動追加**<br>• **リポジトリ URL**: `https://fdoroid.haruki-saito.dev/fdroid/repo`<br>• **フィンガープリント (SHA-256)**:<br>`13 9D 2F 90 BC 30 EF 16 27 AB 03 32 FB B6 4A 00 81 4D BB 21 60 BE 51 05 A7 A5 8A AB 21 42 51 9A` |
 
 ---
 
